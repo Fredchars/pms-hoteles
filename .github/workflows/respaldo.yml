@@ -1,0 +1,55 @@
+name: Respaldo diario de las tablas del PMS (cifrado)
+# Copia diaria de las tablas pms_* del proyecto Supabase (estructura + datos). No incluye tablas de ATLAS (ATLAS tiene
+# su propio respaldo). Archivo: pms_AAAAMMDD_HHMM.tar.gz.gpg (AES-256, clave en el secreto BACKUP_PASSPHRASE),
+# guardado 30 días como artefacto. Además, la consulta diaria mantiene activo el proyecto Supabase Free.
+on:
+  schedule:
+    - cron: "45 8 * * *"   # 3:45 a. m. hora de Colombia (después de los otros respaldos)
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CLAVE_RESPALDO: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: ¿Configurado?
+        id: hay
+        run: echo "ok=$([ -n "$DATABASE_URL" ] && [ -n "$CLAVE_RESPALDO" ] && echo si || echo no)" >> "$GITHUB_OUTPUT"
+      - name: Instalar pg_dump 17
+        if: steps.hay.outputs.ok == 'si'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 >/dev/null
+      - name: Volcado y cifrado
+        if: steps.hay.outputs.ok == 'si'
+        run: |
+          set -euo pipefail
+          D=respaldo; mkdir -p $D
+          BIN=/usr/lib/postgresql/17/bin
+          $BIN/pg_dump "$DATABASE_URL" --no-owner --no-privileges -t 'public.pms_*' | gzip > $D/pms.sql.gz
+          $BIN/psql "$DATABASE_URL" -At -c "select 'hoteles=' || (select count(*) from public.pms_hoteles) || ' reservas=' || (select count(*) from public.pms_reservas) || ' huespedes=' || (select count(*) from public.pms_huespedes) || ' auditoria=' || (select count(*) from public.pms_auditoria)" | tee $D/CONTEO.txt
+          cat > $D/LEEME.txt <<'TXT'
+          PMS Hotelero (piloto) - respaldo de las tablas pms_* (Prototipo diseñado para ATm Consulting).
+          1) gpg -d pms_AAAAMMDD_HHMM.tar.gz.gpg | tar xz      (pide la clave BACKUP_PASSPHRASE)
+          2) Si las tablas existen, borrarlas (solo pms_*): ver db/01_esquema_pms.sql; o restaurar en una base nueva.
+          3) zcat respaldo/pms.sql.gz | psql "$DATABASE_URL"
+          4) python scripts/setup_supabase.py   (reaplica RLS y revocaciones; no duplica datos)
+          TXT
+          F=pms_$(date -u +%Y%m%d_%H%M).tar.gz
+          tar czf "$F" $D
+          printf '%s' "$CLAVE_RESPALDO" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --symmetric --cipher-algo AES256 -o "$F.gpg" "$F"
+          rm -rf "$F" $D
+          ls -l *.gpg
+      - uses: actions/upload-artifact@v4
+        if: steps.hay.outputs.ok == 'si'
+        with:
+          name: respaldo-pms
+          path: "*.gpg"
+          retention-days: 30

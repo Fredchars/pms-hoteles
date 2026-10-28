@@ -1,0 +1,32 @@
+name: Pruebas automáticas
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: pruebas
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils >/dev/null
+      - run: pip install -r requirements-dev.txt
+      - name: Pruebas de reglas críticas (doble venta, precio congelado, impuestos, permisos, estados, aprobaciones)
+        env:
+          PMS_TEST_PG_URL: postgresql://postgres:pruebas@localhost:5432/postgres
+        run: python -m pytest

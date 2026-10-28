@@ -1,0 +1,41 @@
+name: Preparar y verificar Supabase (PMS)
+# Ejecución manual: crea las tablas pms_* (con RLS) en el proyecto Supabase en una sola transacción, siembra los datos
+# ficticios si no hay hoteles, y verifica RLS / API REST pública / tablas de otros proyectos intactas.
+# Necesario porque la máquina de desarrollo no llega a los puertos de PostgreSQL de Supabase (5432/6543).
+on:
+  workflow_dispatch:
+    inputs:
+      resembrar:
+        description: "Borrar y volver a sembrar los datos ficticios (solo tablas pms_)"
+        type: boolean
+        default: false
+      solo_verificar:
+        description: "Solo verificar (no cambia nada)"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      PMS_SEED_CLAVES: ${{ secrets.PMS_SEED_CLAVES }}
+      PMS_RESEMBRAR: ${{ inputs.resembrar && 'si' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Comprobar secretos
+        run: test -n "$DATABASE_URL" || (echo "Falta el secreto DATABASE_URL en el repositorio" && exit 1)
+      - name: Crear tablas pms_* + RLS y sembrar datos ficticios
+        if: ${{ !inputs.solo_verificar }}
+        run: python scripts/setup_supabase.py
+      - name: Verificar (tablas, RLS, API REST pública, otros proyectos intactos)
+        run: python scripts/verificar_supabase.py
