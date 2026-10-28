@@ -1,10 +1,10 @@
-name: Respaldo diario de las tablas del PMS (cifrado)
-# Copia diaria de las tablas pms_* del proyecto Supabase (estructura + datos). No incluye tablas de ATLAS (ATLAS tiene
+name: Respaldo semanal de las tablas del PMS (cifrado)
+# Copia semanal (domingos) de las tablas pms_* del proyecto Supabase (estructura + datos). No incluye tablas de ATLAS (ATLAS tiene
 # su propio respaldo). Archivo: pms_AAAAMMDD_HHMM.tar.gz.gpg (AES-256, clave en el secreto BACKUP_PASSPHRASE),
-# guardado 30 días como artefacto. Además, la consulta diaria mantiene activo el proyecto Supabase Free.
+# guardado 30 días como artefacto. Además, la consulta semanal ayuda a mantener activo el proyecto Supabase Free.
 on:
   schedule:
-    - cron: "45 8 * * *"   # 3:45 a. m. hora de Colombia (después de los otros respaldos)
+    - cron: "45 8 * * 0"   # domingos 3:45 a. m. hora de Colombia (semanal)
   workflow_dispatch:
 permissions:
   contents: read
