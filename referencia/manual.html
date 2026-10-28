@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StayCore PMS · Manual de usuario</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111831; --card:#141c38; --card2:#1a2344; --line:#243055;
+  --tx:#e8edff; --tx2:#9aa6cc; --tx3:#6c7aa6;
+  --acc:#4f7cff; --acc2:#22d3ee; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --vio:#a78bfa;
+  --shadow:0 10px 30px rgba(0,0,0,.35); --r:14px;
+}
+html[data-theme="light"]{
+  --bg:#f4f6fc; --bg2:#ffffff; --card:#ffffff; --card2:#f7f9ff; --line:#e3e8f5;
+  --tx:#101733; --tx2:#5a6584; --tx3:#8a93af;
+  --shadow:0 8px 24px rgba(16,23,51,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--tx); font:15px/1.65 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  display:flex; min-height:100vh;
+}
+a{color:var(--acc2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---------- SIDEBAR ---------- */
+aside{
+  width:290px; flex:0 0 290px; background:var(--bg2); border-right:1px solid var(--line);
+  height:100vh; position:sticky; top:0; display:flex; flex-direction:column;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:grid;place-items:center;font-weight:800;color:#fff;font-size:13px}
+.brand b{font-size:15px;letter-spacing:.2px}
+.brand span{display:block;font-size:11px;color:var(--tx3);font-weight:400}
+.search{padding:12px 14px;border-bottom:1px solid var(--line)}
+.search input{
+  width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);color:var(--tx);font-size:13px;outline:none}
+.search input:focus{border-color:var(--acc)}
+nav{overflow-y:auto;padding:12px 10px 24px;flex:1}
+nav .grp{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);
+  padding:14px 10px 6px;font-weight:700}
+nav a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;
+  color:var(--tx2);font-size:13.5px;margin-bottom:2px;text-decoration:none}
+nav a:hover{background:var(--card);color:var(--tx);text-decoration:none}
+nav a.on{background:linear-gradient(90deg,rgba(79,124,255,.22),transparent);color:var(--tx);
+  box-shadow:inset 2px 0 0 var(--acc)}
+nav a i{width:18px;text-align:center;font-style:normal;opacity:.9}
+.side-foot{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:8px}
+.side-foot button{flex:1;padding:8px;border-radius:9px;border:1px solid var(--line);
+  background:var(--card);color:var(--tx2);font-size:12px;cursor:pointer}
+.side-foot button:hover{color:var(--tx);border-color:var(--acc)}
+
+/* ---------- MAIN ---------- */
+main{flex:1;min-width:0;padding:34px 46px 90px;max-width:1080px}
+.hero{
+  background:linear-gradient(135deg,rgba(79,124,255,.18),rgba(34,211,238,.10));
+  border:1px solid var(--line);border-radius:var(--r);padding:28px 30px;margin-bottom:30px}
+.hero h1{font-size:28px;letter-spacing:-.5px;margin-bottom:8px}
+.hero p{color:var(--tx2);max-width:72ch}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tag{font-size:11.5px;padding:4px 10px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);color:var(--tx2)}
+
+section{margin-bottom:46px;scroll-margin-top:20px}
+section>h2{
+  font-size:21px;letter-spacing:-.3px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+section>h2 .num{
+  width:28px;height:28px;border-radius:9px;background:var(--card);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:12px;color:var(--acc2);font-weight:700;flex:0 0 28px}
+.lead{color:var(--tx2);margin-bottom:18px;max-width:78ch}
+h3{font-size:14px;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);
+  margin:22px 0 10px;font-weight:700}
+p{margin-bottom:12px;max-width:80ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card.sub{background:var(--card2);box-shadow:none}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:14px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);
+  padding:9px 10px;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:10px;border-bottom:1px solid var(--line);color:var(--tx2);vertical-align:top}
+td b,td strong{color:var(--tx)}
+tr:last-child td{border-bottom:none}
+
+ol,ul{margin:0 0 14px 20px}
+li{margin-bottom:7px;color:var(--tx2)}
+li b{color:var(--tx)}
+ol.steps{counter-reset:s;list-style:none;margin-left:0}
+ol.steps li{counter-increment:s;position:relative;padding-left:38px;margin-bottom:11px}
+ol.steps li::before{
+  content:counter(s);position:absolute;left:0;top:1px;width:25px;height:25px;border-radius:8px;
+  background:rgba(79,124,255,.16);border:1px solid rgba(79,124,255,.4);color:var(--acc2);
+  display:grid;place-items:center;font-size:12px;font-weight:700}
+
+.note{border-left:3px solid var(--acc);background:var(--card2);padding:13px 16px;
+  border-radius:0 10px 10px 0;margin:14px 0;font-size:14px;color:var(--tx2)}
+.note.warn{border-color:var(--warn)}
+.note.bad{border-color:var(--bad)}
+.note.ok{border-color:var(--ok)}
+.note b{color:var(--tx)}
+
+.pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;font-weight:600;
+  border:1px solid transparent;white-space:nowrap}
+.p-ok{background:rgba(34,197,94,.14);color:#4ade80;border-color:rgba(34,197,94,.35)}
+.p-warn{background:rgba(245,158,11,.14);color:#fbbf24;border-color:rgba(245,158,11,.35)}
+.p-bad{background:rgba(239,68,68,.14);color:#f87171;border-color:rgba(239,68,68,.35)}
+.p-inf{background:rgba(79,124,255,.16);color:#8aa8ff;border-color:rgba(79,124,255,.4)}
+.p-vio{background:rgba(167,139,250,.16);color:#c4b5fd;border-color:rgba(167,139,250,.4)}
+.p-nu{background:var(--card2);color:var(--tx2);border-color:var(--line)}
+
+kbd{font:600 11.5px ui-monospace,Menlo,Consolas,monospace;background:var(--card2);
+  border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:2px 7px;color:var(--tx)}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--card2);
+  border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--acc2)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* mini maquetas */
+.wire{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card2);
+  margin-bottom:14px;font-size:11px}
+.wire .bar{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);
+  background:var(--card);color:var(--tx3)}
+.wire .bd{display:flex;min-height:120px}
+.wire .sb{width:76px;border-right:1px solid var(--line);padding:8px;color:var(--tx3);background:var(--card)}
+.wire .ct{flex:1;padding:10px;display:grid;gap:7px}
+.wire .box{background:var(--card);border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;color:var(--tx2)}
+.wire .row{display:flex;gap:7px}
+.wire .row>div{flex:1}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.lg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);
+  background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.sw{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+.hide{display:none!important}
+.toTop{position:fixed;right:22px;bottom:22px;width:42px;height:42px;border-radius:12px;
+  background:var(--card);border:1px solid var(--line);color:var(--tx2);cursor:pointer;
+  box-shadow:var(--shadow);font-size:16px}
+.toTop:hover{color:var(--tx);border-color:var(--acc)}
+
+@media print{
+  aside,.toTop{display:none}
+  body{background:#fff;color:#000;display:block}
+  main{max-width:none;padding:0}
+  .card,.wire{box-shadow:none;break-inside:avoid}
+  section{break-inside:avoid-page}
+  a{color:#000}
+}
+@media(max-width:860px){
+  body{display:block}
+  aside{position:static;width:auto;height:auto;flex:none}
+  nav{max-height:260px}
+  main{padding:22px 18px 70px}
+}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <div class="logo">SC</div>
+    <div><b>StayCore PMS</b><span>Manual de usuario · v1.0</span></div>
+  </div>
+  <div class="search"><input id="q" placeholder="Buscar pantalla o concepto…"></div>
+  <nav id="nav">
+    <div class="grp">Empezar</div>
+    <a href="#intro"><i>◇</i>Introducción</a>
+    <a href="#marco"><i>▭</i>Marco común: sidebar y topbar</a>
+    <a href="#roles"><i>⚿</i>Roles y permisos</a>
+
+    <div class="grp">Operativa</div>
+    <a href="#dashboard"><i>▣</i>1 · Dashboard</a>
+    <a href="#planning"><i>▤</i>2 · Planning (tape chart)</a>
+    <a href="#plano"><i>⌂</i>3 · Plano / Disponibilidad</a>
+    <a href="#reservas"><i>☰</i>4 · Reservas</a>
+    <a href="#housekeeping"><i>✦</i>5 · Housekeeping</a>
+
+    <div class="grp">Comercial</div>
+    <a href="#tarifas"><i>€</i>6 · Tarifas e inventario</a>
+    <a href="#promos"><i>%</i>7 · Promos y cupones</a>
+    <a href="#crm"><i>✉</i>8 · CRM · Inbox</a>
+
+    <div class="grp">Análisis y sistema</div>
+    <a href="#reportes"><i>◔</i>9 · Reportes</a>
+    <a href="#integraciones"><i>⇄</i>10 · Integraciones</a>
+
+    <div class="grp">Referencia</div>
+    <a href="#flujos"><i>↻</i>Flujos diarios</a>
+    <a href="#glosario"><i>A</i>Glosario de KPIs</a>
+    <a href="#atajos"><i>⌘</i>Atajos de teclado</a>
+    <a href="#problemas"><i>!</i>Problemas frecuentes</a>
+  </nav>
+  <div class="side-foot">
+    <button onclick="toggleTheme()" id="thBtn">◐ Tema</button>
+    <button onclick="window.print()">⎙ Imprimir</button>
+  </div>
+</aside>
+
+<main>
+
+<div class="hero">
+  <h1>Manual de usuario de StayCore PMS</h1>
+  <p>Guía de trabajo de las diez pantallas del sistema. Para cada una se explica <b>para qué sirve</b>,
+     <b>qué contiene</b>, <b>cómo se interactúa con ella</b> y <b>qué reglas de negocio</b> aplica por debajo.
+     Está escrito para equipos de hostels con camas, apartamentos turísticos y hoteles rurales pequeños,
+     que comparten el mismo producto.</p>
+  <div class="meta">
+    <span class="tag">3 verticales</span>
+    <span class="tag">10 pantallas</span>
+    <span class="tag">Multipropiedad</span>
+    <span class="tag">Tema claro / oscuro</span>
+    <span class="tag">Exportable a PDF</span>
+  </div>
+</div>
+
+<!-- ============ INTRO ============ -->
+<section id="intro">
+  <h2><span class="num">◇</span>Introducción</h2>
+  <p class="lead">StayCore es un PMS (Property Management System): el sistema donde vive la verdad del
+     negocio alojativo. Toda venta, de donde venga, acaba escribiendo en él, y toda disponibilidad que
+     se publica fuera sale de él.</p>
+
+  <h3>El modelo mental en una frase</h3>
+  <p>Se vende un <b>tipo de unidad</b> (un dormitorio compartido, un apartamento de dos dormitorios, una
+     doble con vistas), no una habitación física concreta. La habitación concreta se asigna después,
+     cuando conviene a la operativa. Entender esto evita el 80% de los errores de uso: el Planning y el
+     Plano muestran unidades físicas, pero la <b>disponibilidad real</b> se cuenta por tipo.</p>
+
+  <div class="note"><b>Jerarquía:</b> Organización → Propiedad → Tipo de unidad → Unidad → Cama.
+     En hostels la cama es vendible; en apartamentos y rurales, la unidad completa.</div>
+
+  <h3>Cómo leer cada capítulo</h3>
+  <table>
+    <tr><td style="width:34%"><b>Objetivo</b></td><td>Qué decisión o tarea resuelve la pantalla.</td></tr>
+    <tr><td><b>Quién y cuándo</b></td><td>Perfil que la usa y momento del día.</td></tr>
+    <tr><td><b>Anatomía</b></td><td>Cada bloque de la interfaz y qué significa.</td></tr>
+    <tr><td><b>Interacción</b></td><td>Pasos concretos, clics, arrastres y atajos.</td></tr>
+    <tr><td><b>Reglas</b></td><td>Lo que el sistema impide, calcula o audita por su cuenta.</td></tr>
+  </table>
+</section>
+
+<!-- ============ MARCO ============ -->
+<section id="marco">
+  <h2><span class="num">▭</span>Marco común: sidebar y topbar</h2>
+  <p class="lead">Todas las pantallas comparten el mismo armazón. Aprenderlo una vez ahorra tiempo en las diez.</p>
+
+  <div class="wire">
+    <div class="bar"><span>◱ Propiedad ▾</span><span>⌕ Buscar ⌘K</span><span style="margin-left:auto">⟳ Sync canales</span><span>◐</span><span>LR</span></div>
+    <div class="bd">
+      <div class="sb">Operativa<br>Comercial<br>Análisis<br><br>Copiloto IA</div>
+      <div class="ct"><div class="box">Cabecera de página · título + acciones</div>
+        <div class="row"><div class="box">Contenido</div><div class="box">Panel lateral</div></div></div>
+    </div>
+  </div>
+
+  <h3>Barra lateral (sidebar)</h3>
+  <table>
+    <tr><th>Elemento</th><th>Función</th></tr>
+    <tr><td><b>Grupos Operativa / Comercial / Análisis</b></td>
+        <td>Agrupan las pantallas por momento de uso. Operativa es el día a día; Comercial, la estrategia de venta; Análisis, la revisión.</td></tr>
+    <tr><td><b>Contadores (pills)</b></td>
+        <td>Número en cian junto a un ítem: trabajo pendiente en esa pantalla. En Planning son llegadas sin asignar; en Inbox, conversaciones sin responder; en Plano, habitaciones libres para el rango buscado.</td></tr>
+    <tr><td><b>Tarjeta «Copiloto IA»</b></td>
+        <td>Resumen de la actividad del asistente: mensajes respondidos automáticamente y tiempo ahorrado estimado. Haz clic para abrir el Inbox filtrado por respuestas de IA.</td></tr>
+    <tr><td><b>Colapsar menú</b></td>
+        <td>Reduce la barra a iconos. Útil en el Planning y el Plano, donde se agradece el ancho.</td></tr>
+  </table>
+
+  <h3>Barra superior (topbar)</h3>
+  <table>
+    <tr><th>Elemento</th><th>Función</th></tr>
+    <tr><td><b>Selector de propiedad</b></td>
+        <td>Cambia el contexto de <u>todas</u> las pantallas. Si un dato no cuadra, lo primero que hay que mirar es qué propiedad está activa.</td></tr>
+    <tr><td><b>Buscador global <kbd>⌘</kbd>+<kbd>K</kbd></b></td>
+        <td>Busca por localizador, apellido, email, teléfono o número de habitación y salta directo a la ficha.</td></tr>
+    <tr><td><b>Sync canales</b></td>
+        <td>Fuerza una sincronización inmediata con el channel manager. Normalmente es automática; se usa tras un cambio urgente de precio o un cierre de ventas.</td></tr>
+    <tr><td><b>Tema claro / oscuro</b></td>
+        <td>Preferencia por usuario y dispositivo. El modo claro rinde mejor en recepción con luz natural.</td></tr>
+    <tr><td><b>Avatar</b></td>
+        <td>Perfil, cambio de turno, cierre de sesión y acceso al registro de auditoría propio.</td></tr>
+  </table>
+
+  <div class="note warn"><b>Convención de colores en todo el producto:</b> azul = confirmado, verde = dentro
+     (in-house) u operación correcta, ámbar = requiere atención u opción no garantizada, rojo = bloqueo,
+     error o fuera de servicio, violeta = canal externo (OTA), gris = histórico o cerrado.</div>
+</section>
+
+<!-- ============ ROLES ============ -->
+<section id="roles">
+  <h2><span class="num">⚿</span>Roles y permisos</h2>
+  <p class="lead">El sistema asume cuatro perfiles. Cada capítulo indica quién es el usuario natural de la pantalla.</p>
+  <table>
+    <tr><th>Rol</th><th>Acceso típico</th><th>Restricciones recomendadas</th></tr>
+    <tr><td><b>Recepción</b></td>
+        <td>Dashboard, Planning, Plano, Reservas, Housekeeping, Inbox.</td>
+        <td>No edita tarifas ni promociones; no exporta datos masivos; descuentos limitados a un porcentaje máximo.</td></tr>
+    <tr><td><b>Housekeeping</b></td>
+        <td>Solo el tablero de limpieza, normalmente desde móvil.</td>
+        <td>No ve precios, ni datos de pago, ni el CRM.</td></tr>
+    <tr><td><b>Revenue / Comercial</b></td>
+        <td>Tarifas, Promos, Reportes, Integraciones de distribución.</td>
+        <td>Lectura en operativa; sin acceso a documentos de identidad de huéspedes.</td></tr>
+    <tr><td><b>Dirección / Admin</b></td>
+        <td>Todo, incluida la configuración, usuarios y auditoría.</td>
+        <td>Única que puede anular registros, modificar facturas emitidas o cambiar reglas fiscales.</td></tr>
+  </table>
+  <div class="note"><b>Auditoría:</b> cada cambio de precio, estado de reserva, cancelación y acceso a datos
+     personales queda registrado con usuario, fecha y valor anterior. No se puede desactivar.</div>
+</section>
+
+<!-- ============ 1 DASHBOARD ============ -->
+<section id="dashboard">
+  <h2><span class="num">1</span>Dashboard</h2>
+  <p class="lead">La pantalla de apertura del día: en treinta segundos debe decir si el negocio va bien y qué está
+     a punto de romperse.</p>
+
+  <h3>Objetivo</h3>
+  <p>Concentrar el estado actual (ocupación, ingreso, ritmo de venta) y las incidencias que exigen acción
+     inmediata, sin que nadie tenga que abrir cinco pantallas para enterarse.</p>
+
+  <h3>Quién y cuándo</h3>
+  <p>Recepción al abrir turno y dirección una o dos veces al día. Es la pantalla por defecto al entrar.</p>
+
+  <h3>Anatomía</h3>
+  <table>
+    <tr><th>Bloque</th><th>Qué muestra</th><th>Cómo se lee</th></tr>
+    <tr><td><b>Fila de 6 KPIs</b></td>
+        <td>Ocupación, ADR, RevPAB/RevPAR, ingreso del mes, pickup a 7 días y tasa de cancelación.</td>
+        <td>Cada tarjeta lleva una variación respecto al mismo periodo del año anterior. Verde no siempre es bueno: una ocupación del 98% con ADR plano suele significar que se vendió barato.</td></tr>
+    <tr><td><b>Gráfico de 14 días</b></td>
+        <td>Barras de ocupación y línea de ADR para los próximos catorce días.</td>
+        <td>Busca valles: días con ocupación baja y ADR alto son candidatos a promoción; ocupación alta con ADR bajo, a subida de precio.</td></tr>
+    <tr><td><b>Donut de mix por canal</b></td>
+        <td>Reparto de producción entre web directa y OTAs, con el ADR neto resultante.</td>
+        <td>El ADR neto descuenta comisión. Un canal con ADR bruto alto puede ser peor que la venta directa.</td></tr>
+    <tr><td><b>Llegadas y salidas</b></td>
+        <td>Listas del día con hora estimada, estado de pago y notas.</td>
+        <td>Un clic en cualquier línea abre la reserva.</td></tr>
+    <tr><td><b>Centro de alertas</b></td>
+        <td>Riesgo de overbooking, partes de viajero pendientes, cobros fallidos y desincronizaciones de canal.</td>
+        <td>Cada alerta es accionable: lleva a la pantalla donde se resuelve.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Revisa los KPIs y el centro de alertas antes de cualquier otra cosa. Las alertas rojas bloquean operativa (overbooking, cobro rechazado); las ámbar son plazos (partes de viajero, documentación pendiente).</li>
+    <li>Haz clic en una alerta para saltar a su pantalla de resolución con el filtro ya aplicado.</li>
+    <li>Pulsa una barra del gráfico de 14 días para abrir el Planning posicionado en esa fecha.</li>
+    <li>Desde «Nueva reserva» entras al Plano de disponibilidad con el buscador abierto.</li>
+    <li>Pasa el ratón por el donut para ver importe, noches y comisión de cada canal.</li>
+  </ol>
+
+  <h3>Reglas que aplica</h3>
+  <ul>
+    <li><b>Alerta de overbooking:</b> se dispara cuando las unidades vendidas de un tipo superan las disponibles menos las fuera de servicio, aunque aún quepa dentro del margen de sobreventa configurado.</li>
+    <li><b>Pickup:</b> compara reservas creadas en los últimos 7 días contra la misma ventana del año anterior; mide el ritmo, no el volumen.</li>
+    <li>Todos los importes son netos de impuestos salvo que la tarjeta indique lo contrario.</li>
+  </ul>
+</section>
+
+<!-- ============ 2 PLANNING ============ -->
+<section id="planning">
+  <h2><span class="num">2</span>Planning (tape chart)</h2>
+  <p class="lead">El calendario de cintas: filas de unidades y camas, columnas de días, barras de reservas. Es la
+     pantalla donde recepción pasa más horas.</p>
+
+  <h3>Objetivo</h3>
+  <p>Ver y manipular la ocupación física: asignar reservas a habitaciones concretas, mover huéspedes, alargar
+     estancias, bloquear unidades por avería y detectar huecos improductivos de una noche.</p>
+
+  <div class="wire">
+    <div class="bar"><span>◀ 02/11/2026 ▶</span><span>14 / 21 / 30 días</span><span style="margin-left:auto">Filtros</span><span>Bloquear</span></div>
+    <div class="bd"><div class="sb">Dorm 8 Mix<br>· cama 1<br>· cama 2<br>Dorm 6 Fem<br>Privada 2</div>
+      <div class="ct"><div class="box" style="background:rgba(79,124,255,.18)">▬▬▬ reserva confirmada ▬▬▬</div>
+        <div class="row"><div class="box" style="background:rgba(34,197,94,.16)">▬ in-house ▬</div>
+        <div class="box" style="background:rgba(167,139,250,.16)">▬ OTA ▬</div></div></div></div>
+  </div>
+
+  <h3>Leyenda de barras</h3>
+  <div class="legend">
+    <span class="lg"><i class="sw" style="background:#4f7cff"></i>Confirmada</span>
+    <span class="lg"><i class="sw" style="background:#22c55e"></i>Alojado (in-house)</span>
+    <span class="lg"><i class="sw" style="background:#a78bfa"></i>Procedente de OTA</span>
+    <span class="lg"><i class="sw" style="background:#f59e0b"></i>Opción / sin garantizar</span>
+    <span class="lg"><i class="sw" style="background:#6c7aa6"></i>Salida realizada</span>
+    <span class="lg"><i class="sw" style="background:#ef4444"></i>Bloqueo / fuera de servicio</span>
+  </div>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li><b>Navegar:</b> flechas para avanzar o retroceder, selector de rango (14, 21 o 30 días) y salto a fecha concreta. La rueda del ratón con <kbd>Shift</kbd> desplaza en horizontal.</li>
+    <li><b>Asignar:</b> arrastra una barra desde la banda «sin asignar» hasta la fila de la unidad o cama deseada. Al soltar, el sistema valida tipo, capacidad y restricciones de género del dormitorio.</li>
+    <li><b>Mover o cambiar de habitación:</b> arrastra la barra a otra fila. Si el huésped ya está alojado, el sistema pide motivo del cambio y lo deja anotado en la reserva.</li>
+    <li><b>Alargar o acortar:</b> arrastra el borde derecho de la barra. Se recalcula el precio de las <u>noches nuevas</u> con la tarifa vigente; las noches ya reservadas conservan su precio original.</li>
+    <li><b>Crear bloqueo:</b> arrastra sobre celdas vacías y elige «Fuera de servicio» (avería, obra) o «Uso interno» (personal, cortesía). Los bloqueos restan inventario y se comunican al channel manager.</li>
+    <li><b>Ver detalle:</b> un clic abre la vista rápida lateral; doble clic abre la ficha completa de la reserva.</li>
+    <li><b>Filtrar:</b> por tipo de unidad, estado, canal o etiqueta («llegada tardía», «grupo», «VIP»).</li>
+  </ol>
+
+  <div class="note bad"><b>Lo que el Planning no es:</b> no es el motor de disponibilidad. Que una habitación
+     se vea libre aquí no garantiza que se pueda vender esa noche: el tipo puede estar agotado por reservas
+     aún sin asignar. La disponibilidad real se consulta en Plano o en Tarifas e inventario.</div>
+
+  <h3>Reglas que aplica</h3>
+  <ul>
+    <li>No permite solapes en la misma unidad o cama: el sistema rechaza el arrastre y explica el conflicto.</li>
+    <li>El día de salida no ocupa noche; la barra termina en la mañana de esa fecha para que la unidad pueda venderse de nuevo.</li>
+    <li>Un cambio de unidad entre tipos distintos no cambia el precio por sí solo; si procede un ajuste, se propone y debe confirmarse.</li>
+    <li>Al liberar una unidad, su estado de limpieza pasa automáticamente a «sucia» en Housekeeping.</li>
+  </ul>
+</section>
+
+<!-- ============ 3 PLANO ============ -->
+<section id="plano">
+  <h2><span class="num">3</span>Plano / Disponibilidad</h2>
+  <p class="lead">Selección visual de habitación sobre el plano del edificio: alzado por plantas, distribución
+     de cada piso, precios calculados en vivo y carrito multi-habitación.</p>
+
+  <h3>Objetivo</h3>
+  <p>Convertir una consulta («dos adultos del 14 al 18, con vistas al mar») en una selección concreta y
+     presupuestada, enseñando al cliente dónde dormirá. Sirve tanto para venta telefónica en recepción
+     como de base para el motor público de la web.</p>
+
+  <h3>Anatomía</h3>
+  <table>
+    <tr><th>Bloque</th><th>Qué hace</th></tr>
+    <tr><td><b>Buscador</b></td>
+        <td>Fechas de entrada y salida, adultos, niños, tipología y chips de filtro: solo vista al mar, ocultar no disponibles, accesible, plantas altas. Cualquier cambio recalcula todo al instante.</td></tr>
+    <tr><td><b>KPIs del rango</b></td>
+        <td>Noches, habitaciones disponibles sobre el total, cuántas con vistas, precio «desde» por noche, plazas libres y ocupación prevista.</td></tr>
+    <tr><td><b>Alzado del edificio</b></td>
+        <td>Las tres plantas apiladas con una celda por habitación coloreada según estado. Da la foto global y permite cambiar de planta con un clic.</td></tr>
+    <tr><td><b>Plano de la planta</b></td>
+        <td>Distribución real: cada habitación con su código, tipo, metros, camas e iconos de vistas. La fachada norte muestra el mar.</td></tr>
+    <tr><td><b>Panel de detalle</b></td>
+        <td>Al elegir una habitación: desglose de precio noche a noche, tabla comparativa de precio según número de ocupantes, equipamiento y franja de disponibilidad de 21 días.</td></tr>
+    <tr><td><b>Barra de carrito</b></td>
+        <td>Fija en la parte inferior: habitaciones seleccionadas, total acumulado y botón para pasar a datos del huésped. Permite reservar varias habitaciones en una sola operación.</td></tr>
+  </table>
+
+  <h3>Estados de habitación</h3>
+  <div class="legend">
+    <span class="lg"><i class="sw" style="background:#22c55e"></i><b>Libre</b> · seleccionable</span>
+    <span class="lg"><i class="sw" style="background:#ef4444"></i><b>Ocupada</b> · en el rango pedido</span>
+    <span class="lg"><i class="sw" style="background:#f59e0b"></i><b>En opción</b> · bloqueo temporal 48 h</span>
+    <span class="lg"><i class="sw" style="background:#6c7aa6"></i><b>Fuera de servicio</b></span>
+    <span class="lg"><i class="sw" style="background:#a78bfa"></i><b>Capacidad insuficiente</b> para los ocupantes pedidos</span>
+    <span class="lg"><i class="sw" style="background:#4f7cff"></i><b>Seleccionada</b></span>
+  </div>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Introduce fechas y ocupantes. El número de noches y los KPIs se actualizan solos; el contador cian del menú refleja las habitaciones libres.</li>
+    <li>Activa los chips de filtro según lo que pida el cliente. «Ocultar no disponibles» deja el plano limpio para una venta rápida.</li>
+    <li>Pulsa una planta en el alzado o usa los botones de planta para cambiar el plano mostrado.</li>
+    <li>Haz clic en una habitación para abrir su detalle. Revisa con el cliente el desglose: base, suplemento de vistas, suplemento de planta, personas adicionales y recargo de fin de semana.</li>
+    <li>Pulsa «Añadir» para incorporarla al carrito. Repite para reservas de grupo o familias en habitaciones contiguas.</li>
+    <li>Confirma desde la barra inferior: el sistema pide datos del titular, método de garantía y genera el localizador.</li>
+  </ol>
+
+  <h3>Cómo se calcula el precio</h3>
+  <table>
+    <tr><th>Concepto</th><th>Aplicación</th></tr>
+    <tr><td>Tarifa base por tipo</td><td>Individual, doble, triple o familiar, por noche.</td></tr>
+    <tr><td>Suplemento vista al mar</td><td>Importe fijo por noche en las habitaciones de fachada.</td></tr>
+    <tr><td>Suplemento de planta</td><td>Incremento por planta alta.</td></tr>
+    <tr><td>Ocupantes adicionales</td><td>Por encima de la ocupación incluida, con tarifa distinta para adulto y niño.</td></tr>
+    <tr><td>Recargo de fin de semana</td><td>Porcentaje sobre el subtotal de viernes y sábado.</td></tr>
+    <tr><td>Impuestos</td><td>IVA incluido en el precio mostrado; la tasa turística, si aplica, se detalla aparte porque no siempre se cobra por adelantado.</td></tr>
+  </table>
+
+  <div class="note warn"><b>Habitación concreta ≠ garantía.</b> Por defecto, elegir una habitación en el plano
+     se registra como <u>preferencia</u>: la venta consume inventario del tipo y recepción puede reubicar.
+     Si quieres garantizar la unidad exacta, actívalo como producto de pago («habitación garantizada»).
+     Bloquear unidades físicas en firme desde el canal público fragmenta el inventario y hace perder ventas.</div>
+</section>
+
+<!-- ============ 4 RESERVAS ============ -->
+<section id="reservas">
+  <h2><span class="num">4</span>Reservas</h2>
+  <p class="lead">El listado maestro: toda reserva del sistema, venga del canal que venga, con su ciclo de vida completo.</p>
+
+  <h3>Objetivo</h3>
+  <p>Buscar, filtrar y gestionar reservas una a una o en bloque, y servir de punto de entrada a la ficha
+     detallada donde se cobra, se modifica y se documenta.</p>
+
+  <h3>Anatomía del listado</h3>
+  <table>
+    <tr><th>Columna</th><th>Contenido</th></tr>
+    <tr><td><b>Localizador</b></td><td>Código único e inmutable. Es la referencia en toda comunicación con el huésped.</td></tr>
+    <tr><td><b>Huésped</b></td><td>Titular, con enlace a su ficha de CRM y su historial.</td></tr>
+    <tr><td><b>Fechas y noches</b></td><td>Entrada, salida y duración.</td></tr>
+    <tr><td><b>Unidad / tipo</b></td><td>Lo vendido y, si ya está asignada, la unidad física.</td></tr>
+    <tr><td><b>Canal</b></td><td>Directo, OTA concreta, teléfono o walk-in. Determina la comisión.</td></tr>
+    <tr><td><b>Importe y saldo</b></td><td>Total y pendiente de cobro. En rojo si hay vencimiento pasado.</td></tr>
+    <tr><td><b>Estado</b></td><td>Etiqueta de color según el ciclo de vida.</td></tr>
+  </table>
+
+  <h3>Ciclo de vida de una reserva</h3>
+  <p style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+    <span class="pill p-nu">Consulta</span> →
+    <span class="pill p-warn">Opción</span> →
+    <span class="pill p-inf">Confirmada</span> →
+    <span class="pill p-ok">Alojado</span> →
+    <span class="pill p-nu">Salida realizada</span>
+    &nbsp;·&nbsp; desvíos: <span class="pill p-bad">Cancelada</span> <span class="pill p-bad">No-show</span>
+  </p>
+  <table>
+    <tr><td style="width:24%"><b>Opción</b></td><td>Retiene inventario sin garantía durante un plazo. Caduca sola y libera las noches.</td></tr>
+    <tr><td><b>Confirmada</b></td><td>Garantizada con tarjeta o pago. Entra en las previsiones de ocupación e ingreso.</td></tr>
+    <tr><td><b>Alojado</b></td><td>Check-in hecho. A partir de aquí la unidad física es firme y el cambio exige motivo.</td></tr>
+    <tr><td><b>No-show</b></td><td>No se presentó. Dispara la política de penalización configurada y libera la unidad.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Filtra por rango de fechas, estado, canal, tipo o saldo pendiente. Los filtros se combinan y quedan reflejados en la URL, así que la vista se puede compartir.</li>
+    <li>Abre una reserva para acceder a sus pestañas: estancia y noches, huéspedes y documentación, folio y pagos, comunicaciones y registro de cambios.</li>
+    <li><b>Modificar fechas u ocupación:</b> el sistema comprueba disponibilidad, recalcula solo lo afectado y muestra la diferencia antes de guardar.</li>
+    <li><b>Cobrar:</b> desde el folio, con tarjeta tokenizada, enlace de pago, efectivo o transferencia. Se emite el documento fiscal correspondiente.</li>
+    <li><b>Cancelar:</b> elige el motivo; el sistema calcula la penalización según la política de la tarifa y propone el reembolso.</li>
+    <li><b>Acciones en bloque:</b> selecciona varias filas para enviar un email, marcar no-shows del día o exportar a CSV.</li>
+  </ol>
+
+  <div class="note"><b>Precios congelados.</b> Cada noche guarda el precio con el que se vendió. Cambiar la
+     tarifa pública mañana no altera ninguna reserva existente. Si necesitas modificar el importe de una
+     reserva concreta, se hace explícitamente desde el folio y queda auditado.</div>
+
+  <div class="note warn"><b>Obligaciones legales (España).</b> Las reservas con estancia requieren comunicar
+     los datos de viajeros a la administración dentro del plazo reglamentario. La pestaña de documentación
+     marca en ámbar los huéspedes incompletos y en verde los ya comunicados. Verifica con tu asesor los
+     plazos y campos vigentes, que han ido cambiando.</div>
+</section>
+
+<!-- ============ 5 HOUSEKEEPING ============ -->
+<section id="housekeeping">
+  <h2><span class="num">5</span>Housekeeping</h2>
+  <p class="lead">Tablero kanban de limpieza y mantenimiento, pensado para usarse desde el móvil mientras se recorre el edificio.</p>
+
+  <h3>Objetivo</h3>
+  <p>Saber en todo momento qué unidades están listas para entrar, cuáles faltan y cuáles no se pueden vender,
+     sin llamadas de teléfono ni listas en papel.</p>
+
+  <h3>Columnas del tablero</h3>
+  <div class="legend">
+    <span class="lg"><i class="sw" style="background:#ef4444"></i>Sucia</span>
+    <span class="lg"><i class="sw" style="background:#f59e0b"></i>En limpieza</span>
+    <span class="lg"><i class="sw" style="background:#22d3ee"></i>Lista para revisar</span>
+    <span class="lg"><i class="sw" style="background:#22c55e"></i>Limpia e inspeccionada</span>
+    <span class="lg"><i class="sw" style="background:#6c7aa6"></i>Fuera de servicio</span>
+  </div>
+
+  <h3>Qué muestra cada tarjeta</h3>
+  <ul>
+    <li>Código de unidad o cama, planta y tipo de servicio: <b>salida</b> (limpieza completa), <b>cliente alojado</b> (repaso) o <b>profunda</b>.</li>
+    <li>Prioridad: si hay una llegada temprana prevista, la tarjeta sube arriba con marca de urgencia.</li>
+    <li>Persona asignada y tiempo transcurrido desde el cambio de estado.</li>
+    <li>Incidencias abiertas: una avería reportada deja la unidad marcada aunque esté limpia.</li>
+  </ul>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Arrastra la tarjeta entre columnas conforme avanza el trabajo. En móvil, un toque largo ofrece el siguiente estado directamente.</li>
+    <li>Asigna responsable arrastrando la tarjeta sobre el avatar o desde el selector de la propia tarjeta.</li>
+    <li>Reporta una incidencia desde la tarjeta: descripción, foto y gravedad. Si es grave, crea el bloqueo de la unidad en el Planning automáticamente.</li>
+    <li>Usa «Vista de hoy» para ver solo salidas y llegadas, y «Vista de planta» para organizar el recorrido físico.</li>
+  </ol>
+
+  <h3>Reglas que aplica</h3>
+  <ul>
+    <li>Un check-out marca la unidad como sucia de inmediato; una unidad sucia no se puede asignar a una llegada sin confirmación expresa.</li>
+    <li>El paso a «limpia» puede exigir inspección según la configuración; en apartamentos turísticos suele activarse, en hostels no.</li>
+    <li>Las unidades fuera de servicio quedan restadas del inventario mientras dure el bloqueo.</li>
+  </ul>
+</section>
+
+<!-- ============ 6 TARIFAS ============ -->
+<section id="tarifas">
+  <h2><span class="num">6</span>Tarifas e inventario</h2>
+  <p class="lead">La rejilla donde se decide a cuánto y bajo qué condiciones se vende cada día. Es la pantalla
+     con mayor impacto económico del sistema.</p>
+
+  <h3>Objetivo</h3>
+  <p>Editar precio, restricciones y apertura de ventas por tipo de unidad y fecha, y propagar los cambios a
+     todos los canales conectados.</p>
+
+  <h3>Anatomía de la rejilla</h3>
+  <table>
+    <tr><th>Fila</th><th>Significado</th><th>Efecto</th></tr>
+    <tr><td><b>Disponibilidad</b></td><td>Unidades vendibles restantes ese día.</td><td>Solo informativa; se calcula, no se escribe a mano.</td></tr>
+    <tr><td><b>Precio</b></td><td>Tarifa por noche, por ocupación si procede.</td><td>Se publica en web y OTAs en la siguiente sincronización.</td></tr>
+    <tr><td><b>Estancia mínima</b></td><td>Noches mínimas para poder reservar llegando ese día.</td><td>Protege fines de semana y puentes de reservas de una noche.</td></tr>
+    <tr><td><b>CTA</b></td><td>Cerrado a la llegada.</td><td>Impide empezar la estancia ese día, pero permite pasarla.</td></tr>
+    <tr><td><b>CTD</b></td><td>Cerrado a la salida.</td><td>Impide terminar la estancia ese día.</td></tr>
+    <tr><td><b>Stop-sell</b></td><td>Cierre total de ventas.</td><td>Retira el día del mercado en todos los canales.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Elige tipo de unidad y plan tarifario (flexible, no reembolsable, larga estancia…). Los planes derivados pueden estar vinculados al maestro con un porcentaje.</li>
+    <li>Edita una celda directamente, o selecciona un rango arrastrando y aplica un valor masivo.</li>
+    <li>Usa «Aplicar a» para repetir el cambio por días de la semana: por ejemplo, solo viernes y sábados de los próximos tres meses.</li>
+    <li>Revisa el panel de cambios pendientes y pulsa «Publicar». Hasta ese momento nada sale a los canales.</li>
+    <li>Configura reglas automáticas de yield (por ejemplo, subir un porcentaje cuando la ocupación supera un umbral) y comprueba su efecto en la fila de precio simulado.</li>
+  </ol>
+
+  <div class="note bad"><b>Tres errores caros:</b> dejar un stop-sell puesto y olvidarlo; aplicar una estancia
+     mínima amplia que bloquee huecos de una noche imposibles de vender de otro modo; y editar el plan
+     derivado en lugar del maestro, con lo que el vínculo se rompe y los precios se desalinean entre canales.</div>
+
+  <div class="note ok"><b>Buena práctica:</b> mantén siempre 18-24 meses de calendario cargado. El sistema
+     genera los días futuros automáticamente, pero conviene revisar temporadas altas con antelación.</div>
+</section>
+
+<!-- ============ 7 PROMOS ============ -->
+<section id="promos">
+  <h2><span class="num">7</span>Promos y cupones</h2>
+  <p class="lead">Motor de reglas comerciales: descuentos por anticipación, última hora, estancias largas,
+     campañas con código y colaboraciones.</p>
+
+  <h3>Objetivo</h3>
+  <p>Estimular la demanda en los días flojos sin tocar la tarifa base, y poder medir después qué campaña
+     generó qué ingreso.</p>
+
+  <h3>Elementos de una promoción</h3>
+  <table>
+    <tr><th>Campo</th><th>Para qué sirve</th></tr>
+    <tr><td><b>Tipo de descuento</b></td><td>Porcentaje, importe fijo por noche o por estancia, o noches gratis (3×2).</td></tr>
+    <tr><td><b>Ventana de reserva</b></td><td>Fechas en las que se puede comprar la promoción.</td></tr>
+    <tr><td><b>Ventana de estancia</b></td><td>Fechas en las que se puede disfrutar. Son dos conceptos distintos y confundirlos es el fallo más común.</td></tr>
+    <tr><td><b>Antelación</b></td><td>Días mínimos o máximos entre reserva y llegada: define «venta anticipada» o «última hora».</td></tr>
+    <tr><td><b>Condiciones</b></td><td>Estancia mínima, tipos aplicables, canales, mercados de origen y días de la semana.</td></tr>
+    <tr><td><b>Acumulabilidad</b></td><td>Si puede combinarse con otras y en qué orden. Cada promoción tiene una prioridad numérica.</td></tr>
+    <tr><td><b>Límite de uso</b></td><td>Total, por cliente o por día, para controlar el coste de la campaña.</td></tr>
+  </table>
+
+  <h3>Cupones</h3>
+  <p>Un cupón es una promoción que exige introducir un código. Se usa para colaboraciones con creadores,
+     recuperación de clientes antiguos, compensaciones por incidencias y acuerdos con empresas. Puede ser de
+     un solo uso, nominal o genérico, y siempre registra quién lo canjeó.</p>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Crea la promoción, define ambas ventanas y las condiciones, y guárdala en estado borrador.</li>
+    <li>Usa el <b>simulador</b>: introduce fechas y ocupantes de ejemplo y comprueba el precio resultante y qué reglas se han aplicado en qué orden.</li>
+    <li>Revisa los conflictos que marque el sistema: dos promociones acumulables sobre las mismas fechas pueden dejar el precio por debajo del coste.</li>
+    <li>Actívala y comprueba en Tarifas que el precio mostrado al cliente es el esperado.</li>
+    <li>Mide en Reportes: cada promoción acumula reservas, noches, ingreso y descuento concedido.</li>
+  </ol>
+
+  <div class="note warn"><b>Antes de activar nada</b>, pasa siempre por el simulador. Un descuento mal acotado
+     puede aplicarse a toda la temporada alta en cuestión de horas, y las reservas ya confirmadas no se
+     pueden reprecificar sin negociar con el cliente.</div>
+</section>
+
+<!-- ============ 8 CRM ============ -->
+<section id="crm">
+  <h2><span class="num">8</span>CRM · Inbox</h2>
+  <p class="lead">Bandeja omnicanal: WhatsApp, Telegram y correo en una sola conversación por huésped, con el
+     copiloto de IA proponiendo respuestas.</p>
+
+  <h3>Objetivo</h3>
+  <p>Responder rápido y con contexto, sin saltar entre aplicaciones, y conservar el historial completo de
+     relación con cada cliente para futuras estancias y campañas.</p>
+
+  <h3>Anatomía</h3>
+  <table>
+    <tr><th>Zona</th><th>Contenido</th></tr>
+    <tr><td><b>Lista de conversaciones</b></td>
+        <td>Ordenadas por actividad, con icono de canal, estado (sin leer, en curso, resuelta), responsable asignado y etiquetas.</td></tr>
+    <tr><td><b>Hilo central</b></td>
+        <td>Mensajes unificados de todos los canales de ese huésped, con notas internas intercaladas que el cliente no ve.</td></tr>
+    <tr><td><b>Sugerencia del copiloto</b></td>
+        <td>Borrador generado con el contexto de la reserva. Puedes enviarlo, editarlo o descartarlo; nunca se envía solo salvo que actives las respuestas automáticas para preguntas frecuentes.</td></tr>
+    <tr><td><b>Panel derecho</b></td>
+        <td>Ficha del huésped: reserva activa, historial de estancias, gasto acumulado, preferencias, idioma, consentimientos de marketing y estado de la documentación legal.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Filtra por canal, estado o responsable y abre una conversación. El panel derecho carga automáticamente la reserva vinculada.</li>
+    <li>Responde en el mismo canal por el que escribió el huésped; el sistema lo selecciona por defecto.</li>
+    <li>Revisa la sugerencia del copiloto. Es un borrador: verifica importes, fechas y condiciones antes de enviar.</li>
+    <li>Inserta plantillas con variables (nombre, localizador, instrucciones de llegada) y, si procede, el enlace de pago o de check-in en línea.</li>
+    <li>Deja notas internas para el siguiente turno y asigna la conversación si requiere seguimiento.</li>
+    <li>Marca como resuelta al cerrar; el contador del menú baja.</li>
+  </ol>
+
+  <div class="note warn"><b>Mensajería y ventanas de servicio.</b> En WhatsApp, la respuesta libre solo es
+     posible durante un periodo limitado tras el último mensaje del cliente; fuera de él hay que usar
+     plantillas aprobadas y la conversación tiene coste por mensaje según su categoría. Las condiciones y
+     tarifas cambian con frecuencia: consulta la documentación oficial vigente antes de diseñar campañas
+     masivas.</div>
+
+  <div class="note"><b>Protección de datos.</b> No pegues documentos de identidad ni datos de tarjeta en el
+     chat. La documentación se sube en la ficha de la reserva, donde queda cifrada, con acceso restringido
+     y con plazo de borrado automático.</div>
+</section>
+
+<!-- ============ 9 REPORTES ============ -->
+<section id="reportes">
+  <h2><span class="num">9</span>Reportes</h2>
+  <p class="lead">Análisis de rendimiento, ritmo de ventas y producción por canal, con informes programables por correo.</p>
+
+  <h3>Objetivo</h3>
+  <p>Responder a tres preguntas: cómo ha ido, cómo va a ir y de dónde viene el dinero. Es la base de las
+     decisiones de precio y de inversión en canales.</p>
+
+  <h3>Informes incluidos</h3>
+  <table>
+    <tr><th>Informe</th><th>Qué responde</th><th>Decisión que soporta</th></tr>
+    <tr><td><b>Rendimiento</b></td><td>Ocupación, ADR, RevPAR/RevPAB y estancia media por periodo.</td><td>Comparar meses y temporadas; detectar caídas de precio medio.</td></tr>
+    <tr><td><b>Pace / pickup</b></td><td>Cómo se llena una fecha futura comparada con el año anterior a la misma distancia.</td><td>Cuándo subir precio y cuándo abrir una promoción.</td></tr>
+    <tr><td><b>Producción por canal</b></td><td>Reservas, noches, ingreso bruto, comisión e ingreso neto por canal.</td><td>Qué OTA compensa y cuánto cuesta realmente cada venta.</td></tr>
+    <tr><td><b>Cancelaciones y no-shows</b></td><td>Tasa por canal, tarifa y antelación.</td><td>Ajustar políticas de garantía y sobreventa.</td></tr>
+    <tr><td><b>Caja y cobros</b></td><td>Movimientos del día, método de pago y pendientes.</td><td>Cierre de turno y conciliación contable.</td></tr>
+    <tr><td><b>Mercados y segmentos</b></td><td>Origen, idioma y tipo de cliente.</td><td>Orientar campañas y contenidos.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Define el periodo y la comparativa (año anterior, periodo anterior o presupuesto).</li>
+    <li>Segmenta por propiedad, tipo de unidad, canal o plan tarifario; los gráficos se recalculan.</li>
+    <li>Haz clic en cualquier punto del gráfico de pace para ver las reservas que lo componen: todo informe es navegable hasta el dato original.</li>
+    <li>Exporta a CSV o PDF, o programa el envío automático por correo con la frecuencia que elijas.</li>
+  </ol>
+
+  <div class="note"><b>Criterio de fechas.</b> Los informes de rendimiento se calculan por <u>noche consumida</u>
+     y los de producción por <u>fecha de reserva</u>. Mezclar ambos criterios es la causa habitual de que dos
+     informes «no cuadren»: no miden lo mismo.</div>
+</section>
+
+<!-- ============ 10 INTEGRACIONES ============ -->
+<section id="integraciones">
+  <h2><span class="num">10</span>Integraciones</h2>
+  <p class="lead">Panel de conexiones con servicios externos: distribución, pagos, mensajería, IA, cumplimiento
+     legal, contabilidad, cerraduras y precios dinámicos.</p>
+
+  <h3>Objetivo</h3>
+  <p>Centralizar el alta, el estado de salud y los registros de error de cada conexión, para que un fallo de
+     sincronización se detecte antes de convertirse en overbooking.</p>
+
+  <h3>Qué muestra cada tarjeta</h3>
+  <ul>
+    <li><b>Estado:</b> <span class="pill p-ok">Conectado</span> <span class="pill p-warn">Con avisos</span> <span class="pill p-bad">Error</span> <span class="pill p-nu">Sin configurar</span></li>
+    <li><b>Última sincronización</b> y número de operaciones del día.</li>
+    <li><b>Errores recientes</b>, con posibilidad de reintentar el envío fallido.</li>
+    <li><b>Configuración:</b> credenciales, mapeos y webhooks.</li>
+  </ul>
+
+  <h3>Familias de integración</h3>
+  <table>
+    <tr><th>Familia</th><th>Función</th><th>Qué vigilar</th></tr>
+    <tr><td><b>Channel manager</b></td>
+        <td>Publica disponibilidad y precios en OTAs y recoge las reservas entrantes.</td>
+        <td>El mapeo entre tipos locales y los de cada OTA. Un mapeo mal hecho vende lo que no existe.</td></tr>
+    <tr><td><b>Pagos</b></td>
+        <td>Cobros con tarjeta, enlaces de pago, tokenización y autenticación reforzada.</td>
+        <td>Nunca se almacena el número de tarjeta: solo el token del proveedor.</td></tr>
+    <tr><td><b>Mensajería</b></td>
+        <td>WhatsApp, Telegram y correo transaccional conectados al Inbox.</td>
+        <td>Plantillas aprobadas, reputación del remitente y registros de entrega.</td></tr>
+    <tr><td><b>Inteligencia artificial</b></td>
+        <td>Copiloto de respuestas, resúmenes de conversación y sugerencias de precio.</td>
+        <td>Qué datos se envían al proveedor y con qué base legal; revisar siempre antes de enviar.</td></tr>
+    <tr><td><b>Cumplimiento</b></td>
+        <td>Comunicación de viajeros a la administración y sistema de facturación verificable.</td>
+        <td>Los plazos regulatorios en España han cambiado varias veces; confirma el calendario vigente con tu asesoría.</td></tr>
+    <tr><td><b>ERP y contabilidad</b></td>
+        <td>Envío de facturas, cobros y asientos al software administrativo.</td>
+        <td>Mapeo de cuentas y tipos impositivos; conciliar mensualmente.</td></tr>
+    <tr><td><b>Cerraduras y accesos</b></td>
+        <td>Generación de códigos de entrada ligados a la estancia.</td>
+        <td>Que el código caduque al check-out y se regenere si la reserva cambia.</td></tr>
+  </table>
+
+  <h3>Cómo se interactúa</h3>
+  <ol class="steps">
+    <li>Pulsa «Conectar» e introduce las credenciales del proveedor. El sistema valida la conexión antes de guardar.</li>
+    <li>Completa el mapeo: tipos de unidad, planes tarifarios, métodos de pago o cuentas contables, según el caso.</li>
+    <li>Ejecuta una prueba en modo sandbox y revisa el registro de la operación.</li>
+    <li>Activa en producción y define a quién se notifica si la integración falla.</li>
+    <li>Revisa semanalmente las tarjetas en ámbar: suelen ser avisos que preceden a un error real.</li>
+  </ol>
+
+  <div class="note bad"><b>Regla de oro de la distribución:</b> cuando una conexión de canal está en error,
+     cierra ventas en ese canal antes que seguir vendiendo a ciegas. Un overbooking cuesta mucho más que
+     unas horas sin publicar.</div>
+</section>
+
+<!-- ============ FLUJOS ============ -->
+<section id="flujos">
+  <h2><span class="num">↻</span>Flujos diarios</h2>
+  <p class="lead">Secuencias de trabajo que atraviesan varias pantallas.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">Apertura de turno</h3>
+      <ol class="steps">
+        <li>Dashboard: KPIs y centro de alertas.</li>
+        <li>Resolver alertas rojas (overbooking, cobros).</li>
+        <li>Planning: asignar las llegadas del día.</li>
+        <li>Housekeeping: confirmar unidades listas para llegadas tempranas.</li>
+        <li>Inbox: vaciar conversaciones sin leer.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Venta telefónica</h3>
+      <ol class="steps">
+        <li>Plano: fechas, ocupantes y filtros.</li>
+        <li>Abrir detalle y leer el desglose al cliente.</li>
+        <li>Añadir al carrito, varias habitaciones si es grupo.</li>
+        <li>Confirmar con datos del titular y garantía.</li>
+        <li>Enviar confirmación desde el Inbox.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Check-in</h3>
+      <ol class="steps">
+        <li>Buscar por localizador con <kbd>⌘</kbd>+<kbd>K</kbd>.</li>
+        <li>Completar datos y documentación de todos los huéspedes.</li>
+        <li>Verificar la unidad asignada y su estado de limpieza.</li>
+        <li>Cobrar saldo pendiente y depósito si aplica.</li>
+        <li>Pasar la reserva a «Alojado» y entregar accesos.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Cierre de día</h3>
+      <ol class="steps">
+        <li>Marcar los no-shows pendientes.</li>
+        <li>Housekeeping: dejar el tablero al día.</li>
+        <li>Reportes: informe de caja y conciliación.</li>
+        <li>Integraciones: revisar errores de sincronización.</li>
+        <li>Tarifas: ajustar precios de los próximos días según pickup.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GLOSARIO ============ -->
+<section id="glosario">
+  <h2><span class="num">A</span>Glosario de KPIs y términos</h2>
+  <table>
+    <tr><th style="width:22%">Término</th><th>Definición</th></tr>
+    <tr><td><b>ADR</b></td><td>Tarifa media diaria: ingreso por alojamiento dividido entre noches vendidas. No incluye extras.</td></tr>
+    <tr><td><b>ADR neto</b></td><td>Igual, pero descontando comisiones de canal. Es la cifra que de verdad entra.</td></tr>
+    <tr><td><b>RevPAR</b></td><td>Ingreso por habitación disponible: ocupación × ADR. Mide el aprovechamiento del inventario.</td></tr>
+    <tr><td><b>RevPAB</b></td><td>La misma idea aplicada a camas, propia de hostels.</td></tr>
+    <tr><td><b>ALOS</b></td><td>Estancia media en noches. Subirla reduce costes de limpieza y rotación.</td></tr>
+    <tr><td><b>Pickup</b></td><td>Reservas nuevas captadas en un periodo. Mide el ritmo de entrada de negocio.</td></tr>
+    <tr><td><b>Pace</b></td><td>Comparación del nivel de reservas de una fecha futura con el que había el año anterior a la misma distancia.</td></tr>
+    <tr><td><b>Stop-sell</b></td><td>Cierre total de ventas para una fecha y tipo.</td></tr>
+    <tr><td><b>CTA / CTD</b></td><td>Cerrado a la llegada / a la salida.</td></tr>
+    <tr><td><b>Overbooking</b></td><td>Vender por encima del inventario real, de forma deliberada y acotada, para compensar cancelaciones.</td></tr>
+    <tr><td><b>Fuera de servicio</b></td><td>Unidad no vendible por avería u obra; resta inventario.</td></tr>
+    <tr><td><b>Folio</b></td><td>Cuenta de la estancia: cargos, pagos y saldo.</td></tr>
+    <tr><td><b>Localizador</b></td><td>Código único de la reserva.</td></tr>
+    <tr><td><b>Tipo de unidad</b></td><td>Lo que realmente se vende: un conjunto de unidades intercambiables.</td></tr>
+  </table>
+</section>
+
+<!-- ============ ATAJOS ============ -->
+<section id="atajos">
+  <h2><span class="num">⌘</span>Atajos de teclado</h2>
+  <div class="grid2">
+    <div class="card sub">
+      <table>
+        <tr><td><kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Buscador global</td></tr>
+        <tr><td><kbd>G</kbd> luego <kbd>D</kbd></td><td>Ir al Dashboard</td></tr>
+        <tr><td><kbd>G</kbd> luego <kbd>P</kbd></td><td>Ir al Planning</td></tr>
+        <tr><td><kbd>G</kbd> luego <kbd>L</kbd></td><td>Ir al Plano</td></tr>
+        <tr><td><kbd>G</kbd> luego <kbd>R</kbd></td><td>Ir a Reservas</td></tr>
+      </table>
+    </div>
+    <div class="card sub">
+      <table>
+        <tr><td><kbd>N</kbd></td><td>Nueva reserva</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Avanzar fechas en Planning</td></tr>
+        <tr><td><kbd>Shift</kbd>+rueda</td><td>Desplazamiento horizontal</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Cerrar panel o cancelar arrastre</td></tr>
+        <tr><td><kbd>?</kbd></td><td>Mostrar esta lista en la aplicación</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROBLEMAS ============ -->
+<section id="problemas">
+  <h2><span class="num">!</span>Problemas frecuentes</h2>
+  <table>
+    <tr><th style="width:30%">Síntoma</th><th>Causa habitual</th><th>Solución</th></tr>
+    <tr><td><b>«Veo la habitación libre pero no deja reservar»</b></td>
+        <td>El tipo está agotado por reservas sin asignar, o hay estancia mínima, CTA o stop-sell en esa fecha.</td>
+        <td>Comprobar la fila de restricciones en Tarifas para ese día y tipo.</td></tr>
+    <tr><td><b>Un canal no recibe los precios nuevos</b></td>
+        <td>Cambios sin publicar, o integración en error.</td>
+        <td>Publicar los cambios pendientes y revisar la tarjeta del canal en Integraciones.</td></tr>
+    <tr><td><b>Dos informes dan cifras distintas</b></td>
+        <td>Uno calcula por noche consumida y otro por fecha de reserva.</td>
+        <td>Igualar el criterio de fecha y el filtro de propiedad.</td></tr>
+    <tr><td><b>Un descuento se aplica donde no debería</b></td>
+        <td>Confusión entre ventana de reserva y ventana de estancia, o acumulabilidad abierta.</td>
+        <td>Revisar ambas ventanas y la prioridad en Promos, y validar en el simulador.</td></tr>
+    <tr><td><b>El precio de una reserva no coincide con la tarifa actual</b></td>
+        <td>Comportamiento correcto: los precios se congelan al vender.</td>
+        <td>Si procede ajustar, hacerlo desde el folio con motivo.</td></tr>
+    <tr><td><b>Riesgo de overbooking en el Dashboard</b></td>
+        <td>Margen de sobreventa consumido o unidad puesta fuera de servicio después de vender.</td>
+        <td>Cerrar ventas del tipo, reubicar en el Planning y, si no cabe, gestionar realojo.</td></tr>
+    <tr><td><b>No puedo responder por WhatsApp</b></td>
+        <td>La ventana de respuesta libre ha caducado.</td>
+        <td>Usar una plantilla aprobada o cambiar de canal (correo o teléfono).</td></tr>
+  </table>
+
+  <div class="note" style="margin-top:22px">
+    <b>Aviso.</b> Este manual describe el funcionamiento del prototipo y recoge criterios operativos
+    generales del sector. Las referencias a obligaciones legales españolas (registro de viajeros,
+    facturación verificable, protección de datos, tasas turísticas) son orientativas y cambian con
+    frecuencia: contrástalas con tu asesor y con las fuentes oficiales antes de configurar el sistema en
+    producción.
+  </div>
+</section>
+
+</main>
+
+<button class="toTop" onclick="scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">↑</button>
+
+<script>
+/* ---- tema ---- */
+function toggleTheme(){
+  const h=document.documentElement;
+  const n=h.getAttribute('data-theme')==='light'?'dark':'light';
+  h.setAttribute('data-theme',n);
+  try{localStorage.setItem('sc-manual-theme',n)}catch(e){}
+}
+try{const s=localStorage.getItem('sc-manual-theme'); if(s)document.documentElement.setAttribute('data-theme',s)}catch(e){}
+
+/* ---- scrollspy ---- */
+const links=[...document.querySelectorAll('#nav a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('on'));
+      const a=links.find(l=>l.getAttribute('href')==='#'+e.target.id);
+      if(a)a.classList.add('on');
+    }
+  });
+},{rootMargin:'-10% 0px -75% 0px',threshold:0});
+secs.forEach(s=>io.observe(s));
+
+/* ---- scroll suave ---- */
+links.forEach(a=>a.addEventListener('click',ev=>{
+  const t=document.querySelector(a.getAttribute('href'));
+  if(t){ev.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});history.replaceState(null,'',a.getAttribute('href'));}
+}));
+
+/* ---- buscador del índice ---- */
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{
+  const v=q.value.trim().toLowerCase();
+  links.forEach(a=>a.classList.toggle('hide', v && !a.textContent.toLowerCase().includes(v)));
+  document.querySelectorAll('#nav .grp').forEach(g=>{
+    let n=g.nextElementSibling, vis=false;
+    while(n && n.tagName==='A'){ if(!n.classList.contains('hide'))vis=true; n=n.nextElementSibling; }
+    g.classList.toggle('hide', v && !vis);
+  });
+});
+q.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const first=links.find(a=>!a.classList.contains('hide'));
+    if(first)first.click();
+  }
+});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus();q.select();}
+});
+</script>
+</body>
+</html>

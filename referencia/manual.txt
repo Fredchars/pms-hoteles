@@ -1,0 +1,756 @@
+
+StayCore PMS · Manual de usuario
+SC
+StayCore PMS
+Manual de usuario · v1.0
+Empezar
+◇
+Introducción
+▭
+Marco común: sidebar y topbar
+⚿
+Roles y permisos
+Operativa
+▣
+1 · Dashboard
+▤
+2 · Planning (tape chart)
+⌂
+3 · Plano / Disponibilidad
+☰
+4 · Reservas
+✦
+5 · Housekeeping
+Comercial
+€
+6 · Tarifas e inventario
+%
+7 · Promos y cupones
+✉
+8 · CRM · Inbox
+Análisis y sistema
+◔
+9 · Reportes
+⇄
+10 · Integraciones
+Referencia
+↻
+Flujos diarios
+A
+Glosario de KPIs
+⌘
+Atajos de teclado
+!
+Problemas frecuentes
+◐ Tema
+⎙ Imprimir
+Manual de usuario de StayCore PMS
+Guía de trabajo de las diez pantallas del sistema. Para cada una se explica 
+para qué sirve
+,
+qué contiene
+, 
+cómo se interactúa con ella
+ y 
+qué reglas de negocio
+ aplica por debajo.
+     Está escrito para equipos de hostels con camas, apartamentos turísticos y hoteles rurales pequeños,
+     que comparten el mismo producto.
+3 verticales
+10 pantallas
+Multipropiedad
+Tema claro / oscuro
+Exportable a PDF
+◇
+Introducción
+StayCore es un PMS (Property Management System): el sistema donde vive la verdad del
+     negocio alojativo. Toda venta, de donde venga, acaba escribiendo en él, y toda disponibilidad que
+     se publica fuera sale de él.
+El modelo mental en una frase
+Se vende un 
+tipo de unidad
+ (un dormitorio compartido, un apartamento de dos dormitorios, una
+     doble con vistas), no una habitación física concreta. La habitación concreta se asigna después,
+     cuando conviene a la operativa. Entender esto evita el 80% de los errores de uso: el Planning y el
+     Plano muestran unidades físicas, pero la 
+disponibilidad real
+ se cuenta por tipo.
+Jerarquía:
+ Organización → Propiedad → Tipo de unidad → Unidad → Cama.
+     En hostels la cama es vendible; en apartamentos y rurales, la unidad completa.
+Cómo leer cada capítulo
+Objetivo
+Qué decisión o tarea resuelve la pantalla.
+Quién y cuándo
+Perfil que la usa y momento del día.
+Anatomía
+Cada bloque de la interfaz y qué significa.
+Interacción
+Pasos concretos, clics, arrastres y atajos.
+Reglas
+Lo que el sistema impide, calcula o audita por su cuenta.
+▭
+Marco común: sidebar y topbar
+Todas las pantallas comparten el mismo armazón. Aprenderlo una vez ahorra tiempo en las diez.
+◱ Propiedad ▾
+⌕ Buscar ⌘K
+⟳ Sync canales
+◐
+LR
+Operativa
+Comercial
+Análisis
+Copiloto IA
+Cabecera de página · título + acciones
+Contenido
+Panel lateral
+Barra lateral (sidebar)
+Elemento
+Función
+Grupos Operativa / Comercial / Análisis
+Agrupan las pantallas por momento de uso. Operativa es el día a día; Comercial, la estrategia de venta; Análisis, la revisión.
+Contadores (pills)
+Número en cian junto a un ítem: trabajo pendiente en esa pantalla. En Planning son llegadas sin asignar; en Inbox, conversaciones sin responder; en Plano, habitaciones libres para el rango buscado.
+Tarjeta «Copiloto IA»
+Resumen de la actividad del asistente: mensajes respondidos automáticamente y tiempo ahorrado estimado. Haz clic para abrir el Inbox filtrado por respuestas de IA.
+Colapsar menú
+Reduce la barra a iconos. Útil en el Planning y el Plano, donde se agradece el ancho.
+Barra superior (topbar)
+Elemento
+Función
+Selector de propiedad
+Cambia el contexto de 
+todas
+ las pantallas. Si un dato no cuadra, lo primero que hay que mirar es qué propiedad está activa.
+Buscador global 
+⌘
++
+K
+Busca por localizador, apellido, email, teléfono o número de habitación y salta directo a la ficha.
+Sync canales
+Fuerza una sincronización inmediata con el channel manager. Normalmente es automática; se usa tras un cambio urgente de precio o un cierre de ventas.
+Tema claro / oscuro
+Preferencia por usuario y dispositivo. El modo claro rinde mejor en recepción con luz natural.
+Avatar
+Perfil, cambio de turno, cierre de sesión y acceso al registro de auditoría propio.
+Convención de colores en todo el producto:
+ azul = confirmado, verde = dentro
+     (in-house) u operación correcta, ámbar = requiere atención u opción no garantizada, rojo = bloqueo,
+     error o fuera de servicio, violeta = canal externo (OTA), gris = histórico o cerrado.
+⚿
+Roles y permisos
+El sistema asume cuatro perfiles. Cada capítulo indica quién es el usuario natural de la pantalla.
+Rol
+Acceso típico
+Restricciones recomendadas
+Recepción
+Dashboard, Planning, Plano, Reservas, Housekeeping, Inbox.
+No edita tarifas ni promociones; no exporta datos masivos; descuentos limitados a un porcentaje máximo.
+Housekeeping
+Solo el tablero de limpieza, normalmente desde móvil.
+No ve precios, ni datos de pago, ni el CRM.
+Revenue / Comercial
+Tarifas, Promos, Reportes, Integraciones de distribución.
+Lectura en operativa; sin acceso a documentos de identidad de huéspedes.
+Dirección / Admin
+Todo, incluida la configuración, usuarios y auditoría.
+Única que puede anular registros, modificar facturas emitidas o cambiar reglas fiscales.
+Auditoría:
+ cada cambio de precio, estado de reserva, cancelación y acceso a datos
+     personales queda registrado con usuario, fecha y valor anterior. No se puede desactivar.
+1
+Dashboard
+La pantalla de apertura del día: en treinta segundos debe decir si el negocio va bien y qué está
+     a punto de romperse.
+Objetivo
+Concentrar el estado actual (ocupación, ingreso, ritmo de venta) y las incidencias que exigen acción
+     inmediata, sin que nadie tenga que abrir cinco pantallas para enterarse.
+Quién y cuándo
+Recepción al abrir turno y dirección una o dos veces al día. Es la pantalla por defecto al entrar.
+Anatomía
+Bloque
+Qué muestra
+Cómo se lee
+Fila de 6 KPIs
+Ocupación, ADR, RevPAB/RevPAR, ingreso del mes, pickup a 7 días y tasa de cancelación.
+Cada tarjeta lleva una variación respecto al mismo periodo del año anterior. Verde no siempre es bueno: una ocupación del 98% con ADR plano suele significar que se vendió barato.
+Gráfico de 14 días
+Barras de ocupación y línea de ADR para los próximos catorce días.
+Busca valles: días con ocupación baja y ADR alto son candidatos a promoción; ocupación alta con ADR bajo, a subida de precio.
+Donut de mix por canal
+Reparto de producción entre web directa y OTAs, con el ADR neto resultante.
+El ADR neto descuenta comisión. Un canal con ADR bruto alto puede ser peor que la venta directa.
+Llegadas y salidas
+Listas del día con hora estimada, estado de pago y notas.
+Un clic en cualquier línea abre la reserva.
+Centro de alertas
+Riesgo de overbooking, partes de viajero pendientes, cobros fallidos y desincronizaciones de canal.
+Cada alerta es accionable: lleva a la pantalla donde se resuelve.
+Cómo se interactúa
+Revisa los KPIs y el centro de alertas antes de cualquier otra cosa. Las alertas rojas bloquean operativa (overbooking, cobro rechazado); las ámbar son plazos (partes de viajero, documentación pendiente).
+Haz clic en una alerta para saltar a su pantalla de resolución con el filtro ya aplicado.
+Pulsa una barra del gráfico de 14 días para abrir el Planning posicionado en esa fecha.
+Desde «Nueva reserva» entras al Plano de disponibilidad con el buscador abierto.
+Pasa el ratón por el donut para ver importe, noches y comisión de cada canal.
+Reglas que aplica
+Alerta de overbooking:
+ se dispara cuando las unidades vendidas de un tipo superan las disponibles menos las fuera de servicio, aunque aún quepa dentro del margen de sobreventa configurado.
+Pickup:
+ compara reservas creadas en los últimos 7 días contra la misma ventana del año anterior; mide el ritmo, no el volumen.
+Todos los importes son netos de impuestos salvo que la tarjeta indique lo contrario.
+2
+Planning (tape chart)
+El calendario de cintas: filas de unidades y camas, columnas de días, barras de reservas. Es la
+     pantalla donde recepción pasa más horas.
+Objetivo
+Ver y manipular la ocupación física: asignar reservas a habitaciones concretas, mover huéspedes, alargar
+     estancias, bloquear unidades por avería y detectar huecos improductivos de una noche.
+◀ 02/11/2026 ▶
+14 / 21 / 30 días
+Filtros
+Bloquear
+Dorm 8 Mix
+· cama 1
+· cama 2
+Dorm 6 Fem
+Privada 2
+▬▬▬ reserva confirmada ▬▬▬
+▬ in-house ▬
+▬ OTA ▬
+Leyenda de barras
+Confirmada
+Alojado (in-house)
+Procedente de OTA
+Opción / sin garantizar
+Salida realizada
+Bloqueo / fuera de servicio
+Cómo se interactúa
+Navegar:
+ flechas para avanzar o retroceder, selector de rango (14, 21 o 30 días) y salto a fecha concreta. La rueda del ratón con 
+Shift
+ desplaza en horizontal.
+Asignar:
+ arrastra una barra desde la banda «sin asignar» hasta la fila de la unidad o cama deseada. Al soltar, el sistema valida tipo, capacidad y restricciones de género del dormitorio.
+Mover o cambiar de habitación:
+ arrastra la barra a otra fila. Si el huésped ya está alojado, el sistema pide motivo del cambio y lo deja anotado en la reserva.
+Alargar o acortar:
+ arrastra el borde derecho de la barra. Se recalcula el precio de las 
+noches nuevas
+ con la tarifa vigente; las noches ya reservadas conservan su precio original.
+Crear bloqueo:
+ arrastra sobre celdas vacías y elige «Fuera de servicio» (avería, obra) o «Uso interno» (personal, cortesía). Los bloqueos restan inventario y se comunican al channel manager.
+Ver detalle:
+ un clic abre la vista rápida lateral; doble clic abre la ficha completa de la reserva.
+Filtrar:
+ por tipo de unidad, estado, canal o etiqueta («llegada tardía», «grupo», «VIP»).
+Lo que el Planning no es:
+ no es el motor de disponibilidad. Que una habitación
+     se vea libre aquí no garantiza que se pueda vender esa noche: el tipo puede estar agotado por reservas
+     aún sin asignar. La disponibilidad real se consulta en Plano o en Tarifas e inventario.
+Reglas que aplica
+No permite solapes en la misma unidad o cama: el sistema rechaza el arrastre y explica el conflicto.
+El día de salida no ocupa noche; la barra termina en la mañana de esa fecha para que la unidad pueda venderse de nuevo.
+Un cambio de unidad entre tipos distintos no cambia el precio por sí solo; si procede un ajuste, se propone y debe confirmarse.
+Al liberar una unidad, su estado de limpieza pasa automáticamente a «sucia» en Housekeeping.
+3
+Plano / Disponibilidad
+Selección visual de habitación sobre el plano del edificio: alzado por plantas, distribución
+     de cada piso, precios calculados en vivo y carrito multi-habitación.
+Objetivo
+Convertir una consulta («dos adultos del 14 al 18, con vistas al mar») en una selección concreta y
+     presupuestada, enseñando al cliente dónde dormirá. Sirve tanto para venta telefónica en recepción
+     como de base para el motor público de la web.
+Anatomía
+Bloque
+Qué hace
+Buscador
+Fechas de entrada y salida, adultos, niños, tipología y chips de filtro: solo vista al mar, ocultar no disponibles, accesible, plantas altas. Cualquier cambio recalcula todo al instante.
+KPIs del rango
+Noches, habitaciones disponibles sobre el total, cuántas con vistas, precio «desde» por noche, plazas libres y ocupación prevista.
+Alzado del edificio
+Las tres plantas apiladas con una celda por habitación coloreada según estado. Da la foto global y permite cambiar de planta con un clic.
+Plano de la planta
+Distribución real: cada habitación con su código, tipo, metros, camas e iconos de vistas. La fachada norte muestra el mar.
+Panel de detalle
+Al elegir una habitación: desglose de precio noche a noche, tabla comparativa de precio según número de ocupantes, equipamiento y franja de disponibilidad de 21 días.
+Barra de carrito
+Fija en la parte inferior: habitaciones seleccionadas, total acumulado y botón para pasar a datos del huésped. Permite reservar varias habitaciones en una sola operación.
+Estados de habitación
+Libre
+ · seleccionable
+Ocupada
+ · en el rango pedido
+En opción
+ · bloqueo temporal 48 h
+Fuera de servicio
+Capacidad insuficiente
+ para los ocupantes pedidos
+Seleccionada
+Cómo se interactúa
+Introduce fechas y ocupantes. El número de noches y los KPIs se actualizan solos; el contador cian del menú refleja las habitaciones libres.
+Activa los chips de filtro según lo que pida el cliente. «Ocultar no disponibles» deja el plano limpio para una venta rápida.
+Pulsa una planta en el alzado o usa los botones de planta para cambiar el plano mostrado.
+Haz clic en una habitación para abrir su detalle. Revisa con el cliente el desglose: base, suplemento de vistas, suplemento de planta, personas adicionales y recargo de fin de semana.
+Pulsa «Añadir» para incorporarla al carrito. Repite para reservas de grupo o familias en habitaciones contiguas.
+Confirma desde la barra inferior: el sistema pide datos del titular, método de garantía y genera el localizador.
+Cómo se calcula el precio
+Concepto
+Aplicación
+Tarifa base por tipo
+Individual, doble, triple o familiar, por noche.
+Suplemento vista al mar
+Importe fijo por noche en las habitaciones de fachada.
+Suplemento de planta
+Incremento por planta alta.
+Ocupantes adicionales
+Por encima de la ocupación incluida, con tarifa distinta para adulto y niño.
+Recargo de fin de semana
+Porcentaje sobre el subtotal de viernes y sábado.
+Impuestos
+IVA incluido en el precio mostrado; la tasa turística, si aplica, se detalla aparte porque no siempre se cobra por adelantado.
+Habitación concreta ≠ garantía.
+ Por defecto, elegir una habitación en el plano
+     se registra como 
+preferencia
+: la venta consume inventario del tipo y recepción puede reubicar.
+     Si quieres garantizar la unidad exacta, actívalo como producto de pago («habitación garantizada»).
+     Bloquear unidades físicas en firme desde el canal público fragmenta el inventario y hace perder ventas.
+4
+Reservas
+El listado maestro: toda reserva del sistema, venga del canal que venga, con su ciclo de vida completo.
+Objetivo
+Buscar, filtrar y gestionar reservas una a una o en bloque, y servir de punto de entrada a la ficha
+     detallada donde se cobra, se modifica y se documenta.
+Anatomía del listado
+Columna
+Contenido
+Localizador
+Código único e inmutable. Es la referencia en toda comunicación con el huésped.
+Huésped
+Titular, con enlace a su ficha de CRM y su historial.
+Fechas y noches
+Entrada, salida y duración.
+Unidad / tipo
+Lo vendido y, si ya está asignada, la unidad física.
+Canal
+Directo, OTA concreta, teléfono o walk-in. Determina la comisión.
+Importe y saldo
+Total y pendiente de cobro. En rojo si hay vencimiento pasado.
+Estado
+Etiqueta de color según el ciclo de vida.
+Ciclo de vida de una reserva
+Consulta
+ →
+Opción
+ →
+Confirmada
+ →
+Alojado
+ →
+Salida realizada
+     ·  desvíos: 
+Cancelada
+No-show
+Opción
+Retiene inventario sin garantía durante un plazo. Caduca sola y libera las noches.
+Confirmada
+Garantizada con tarjeta o pago. Entra en las previsiones de ocupación e ingreso.
+Alojado
+Check-in hecho. A partir de aquí la unidad física es firme y el cambio exige motivo.
+No-show
+No se presentó. Dispara la política de penalización configurada y libera la unidad.
+Cómo se interactúa
+Filtra por rango de fechas, estado, canal, tipo o saldo pendiente. Los filtros se combinan y quedan reflejados en la URL, así que la vista se puede compartir.
+Abre una reserva para acceder a sus pestañas: estancia y noches, huéspedes y documentación, folio y pagos, comunicaciones y registro de cambios.
+Modificar fechas u ocupación:
+ el sistema comprueba disponibilidad, recalcula solo lo afectado y muestra la diferencia antes de guardar.
+Cobrar:
+ desde el folio, con tarjeta tokenizada, enlace de pago, efectivo o transferencia. Se emite el documento fiscal correspondiente.
+Cancelar:
+ elige el motivo; el sistema calcula la penalización según la política de la tarifa y propone el reembolso.
+Acciones en bloque:
+ selecciona varias filas para enviar un email, marcar no-shows del día o exportar a CSV.
+Precios congelados.
+ Cada noche guarda el precio con el que se vendió. Cambiar la
+     tarifa pública mañana no altera ninguna reserva existente. Si necesitas modificar el importe de una
+     reserva concreta, se hace explícitamente desde el folio y queda auditado.
+Obligaciones legales (España).
+ Las reservas con estancia requieren comunicar
+     los datos de viajeros a la administración dentro del plazo reglamentario. La pestaña de documentación
+     marca en ámbar los huéspedes incompletos y en verde los ya comunicados. Verifica con tu asesor los
+     plazos y campos vigentes, que han ido cambiando.
+5
+Housekeeping
+Tablero kanban de limpieza y mantenimiento, pensado para usarse desde el móvil mientras se recorre el edificio.
+Objetivo
+Saber en todo momento qué unidades están listas para entrar, cuáles faltan y cuáles no se pueden vender,
+     sin llamadas de teléfono ni listas en papel.
+Columnas del tablero
+Sucia
+En limpieza
+Lista para revisar
+Limpia e inspeccionada
+Fuera de servicio
+Qué muestra cada tarjeta
+Código de unidad o cama, planta y tipo de servicio: 
+salida
+ (limpieza completa), 
+cliente alojado
+ (repaso) o 
+profunda
+.
+Prioridad: si hay una llegada temprana prevista, la tarjeta sube arriba con marca de urgencia.
+Persona asignada y tiempo transcurrido desde el cambio de estado.
+Incidencias abiertas: una avería reportada deja la unidad marcada aunque esté limpia.
+Cómo se interactúa
+Arrastra la tarjeta entre columnas conforme avanza el trabajo. En móvil, un toque largo ofrece el siguiente estado directamente.
+Asigna responsable arrastrando la tarjeta sobre el avatar o desde el selector de la propia tarjeta.
+Reporta una incidencia desde la tarjeta: descripción, foto y gravedad. Si es grave, crea el bloqueo de la unidad en el Planning automáticamente.
+Usa «Vista de hoy» para ver solo salidas y llegadas, y «Vista de planta» para organizar el recorrido físico.
+Reglas que aplica
+Un check-out marca la unidad como sucia de inmediato; una unidad sucia no se puede asignar a una llegada sin confirmación expresa.
+El paso a «limpia» puede exigir inspección según la configuración; en apartamentos turísticos suele activarse, en hostels no.
+Las unidades fuera de servicio quedan restadas del inventario mientras dure el bloqueo.
+6
+Tarifas e inventario
+La rejilla donde se decide a cuánto y bajo qué condiciones se vende cada día. Es la pantalla
+     con mayor impacto económico del sistema.
+Objetivo
+Editar precio, restricciones y apertura de ventas por tipo de unidad y fecha, y propagar los cambios a
+     todos los canales conectados.
+Anatomía de la rejilla
+Fila
+Significado
+Efecto
+Disponibilidad
+Unidades vendibles restantes ese día.
+Solo informativa; se calcula, no se escribe a mano.
+Precio
+Tarifa por noche, por ocupación si procede.
+Se publica en web y OTAs en la siguiente sincronización.
+Estancia mínima
+Noches mínimas para poder reservar llegando ese día.
+Protege fines de semana y puentes de reservas de una noche.
+CTA
+Cerrado a la llegada.
+Impide empezar la estancia ese día, pero permite pasarla.
+CTD
+Cerrado a la salida.
+Impide terminar la estancia ese día.
+Stop-sell
+Cierre total de ventas.
+Retira el día del mercado en todos los canales.
+Cómo se interactúa
+Elige tipo de unidad y plan tarifario (flexible, no reembolsable, larga estancia…). Los planes derivados pueden estar vinculados al maestro con un porcentaje.
+Edita una celda directamente, o selecciona un rango arrastrando y aplica un valor masivo.
+Usa «Aplicar a» para repetir el cambio por días de la semana: por ejemplo, solo viernes y sábados de los próximos tres meses.
+Revisa el panel de cambios pendientes y pulsa «Publicar». Hasta ese momento nada sale a los canales.
+Configura reglas automáticas de yield (por ejemplo, subir un porcentaje cuando la ocupación supera un umbral) y comprueba su efecto en la fila de precio simulado.
+Tres errores caros:
+ dejar un stop-sell puesto y olvidarlo; aplicar una estancia
+     mínima amplia que bloquee huecos de una noche imposibles de vender de otro modo; y editar el plan
+     derivado en lugar del maestro, con lo que el vínculo se rompe y los precios se desalinean entre canales.
+Buena práctica:
+ mantén siempre 18-24 meses de calendario cargado. El sistema
+     genera los días futuros automáticamente, pero conviene revisar temporadas altas con antelación.
+7
+Promos y cupones
+Motor de reglas comerciales: descuentos por anticipación, última hora, estancias largas,
+     campañas con código y colaboraciones.
+Objetivo
+Estimular la demanda en los días flojos sin tocar la tarifa base, y poder medir después qué campaña
+     generó qué ingreso.
+Elementos de una promoción
+Campo
+Para qué sirve
+Tipo de descuento
+Porcentaje, importe fijo por noche o por estancia, o noches gratis (3×2).
+Ventana de reserva
+Fechas en las que se puede comprar la promoción.
+Ventana de estancia
+Fechas en las que se puede disfrutar. Son dos conceptos distintos y confundirlos es el fallo más común.
+Antelación
+Días mínimos o máximos entre reserva y llegada: define «venta anticipada» o «última hora».
+Condiciones
+Estancia mínima, tipos aplicables, canales, mercados de origen y días de la semana.
+Acumulabilidad
+Si puede combinarse con otras y en qué orden. Cada promoción tiene una prioridad numérica.
+Límite de uso
+Total, por cliente o por día, para controlar el coste de la campaña.
+Cupones
+Un cupón es una promoción que exige introducir un código. Se usa para colaboraciones con creadores,
+     recuperación de clientes antiguos, compensaciones por incidencias y acuerdos con empresas. Puede ser de
+     un solo uso, nominal o genérico, y siempre registra quién lo canjeó.
+Cómo se interactúa
+Crea la promoción, define ambas ventanas y las condiciones, y guárdala en estado borrador.
+Usa el 
+simulador
+: introduce fechas y ocupantes de ejemplo y comprueba el precio resultante y qué reglas se han aplicado en qué orden.
+Revisa los conflictos que marque el sistema: dos promociones acumulables sobre las mismas fechas pueden dejar el precio por debajo del coste.
+Actívala y comprueba en Tarifas que el precio mostrado al cliente es el esperado.
+Mide en Reportes: cada promoción acumula reservas, noches, ingreso y descuento concedido.
+Antes de activar nada
+, pasa siempre por el simulador. Un descuento mal acotado
+     puede aplicarse a toda la temporada alta en cuestión de horas, y las reservas ya confirmadas no se
+     pueden reprecificar sin negociar con el cliente.
+8
+CRM · Inbox
+Bandeja omnicanal: WhatsApp, Telegram y correo en una sola conversación por huésped, con el
+     copiloto de IA proponiendo respuestas.
+Objetivo
+Responder rápido y con contexto, sin saltar entre aplicaciones, y conservar el historial completo de
+     relación con cada cliente para futuras estancias y campañas.
+Anatomía
+Zona
+Contenido
+Lista de conversaciones
+Ordenadas por actividad, con icono de canal, estado (sin leer, en curso, resuelta), responsable asignado y etiquetas.
+Hilo central
+Mensajes unificados de todos los canales de ese huésped, con notas internas intercaladas que el cliente no ve.
+Sugerencia del copiloto
+Borrador generado con el contexto de la reserva. Puedes enviarlo, editarlo o descartarlo; nunca se envía solo salvo que actives las respuestas automáticas para preguntas frecuentes.
+Panel derecho
+Ficha del huésped: reserva activa, historial de estancias, gasto acumulado, preferencias, idioma, consentimientos de marketing y estado de la documentación legal.
+Cómo se interactúa
+Filtra por canal, estado o responsable y abre una conversación. El panel derecho carga automáticamente la reserva vinculada.
+Responde en el mismo canal por el que escribió el huésped; el sistema lo selecciona por defecto.
+Revisa la sugerencia del copiloto. Es un borrador: verifica importes, fechas y condiciones antes de enviar.
+Inserta plantillas con variables (nombre, localizador, instrucciones de llegada) y, si procede, el enlace de pago o de check-in en línea.
+Deja notas internas para el siguiente turno y asigna la conversación si requiere seguimiento.
+Marca como resuelta al cerrar; el contador del menú baja.
+Mensajería y ventanas de servicio.
+ En WhatsApp, la respuesta libre solo es
+     posible durante un periodo limitado tras el último mensaje del cliente; fuera de él hay que usar
+     plantillas aprobadas y la conversación tiene coste por mensaje según su categoría. Las condiciones y
+     tarifas cambian con frecuencia: consulta la documentación oficial vigente antes de diseñar campañas
+     masivas.
+Protección de datos.
+ No pegues documentos de identidad ni datos de tarjeta en el
+     chat. La documentación se sube en la ficha de la reserva, donde queda cifrada, con acceso restringido
+     y con plazo de borrado automático.
+9
+Reportes
+Análisis de rendimiento, ritmo de ventas y producción por canal, con informes programables por correo.
+Objetivo
+Responder a tres preguntas: cómo ha ido, cómo va a ir y de dónde viene el dinero. Es la base de las
+     decisiones de precio y de inversión en canales.
+Informes incluidos
+Informe
+Qué responde
+Decisión que soporta
+Rendimiento
+Ocupación, ADR, RevPAR/RevPAB y estancia media por periodo.
+Comparar meses y temporadas; detectar caídas de precio medio.
+Pace / pickup
+Cómo se llena una fecha futura comparada con el año anterior a la misma distancia.
+Cuándo subir precio y cuándo abrir una promoción.
+Producción por canal
+Reservas, noches, ingreso bruto, comisión e ingreso neto por canal.
+Qué OTA compensa y cuánto cuesta realmente cada venta.
+Cancelaciones y no-shows
+Tasa por canal, tarifa y antelación.
+Ajustar políticas de garantía y sobreventa.
+Caja y cobros
+Movimientos del día, método de pago y pendientes.
+Cierre de turno y conciliación contable.
+Mercados y segmentos
+Origen, idioma y tipo de cliente.
+Orientar campañas y contenidos.
+Cómo se interactúa
+Define el periodo y la comparativa (año anterior, periodo anterior o presupuesto).
+Segmenta por propiedad, tipo de unidad, canal o plan tarifario; los gráficos se recalculan.
+Haz clic en cualquier punto del gráfico de pace para ver las reservas que lo componen: todo informe es navegable hasta el dato original.
+Exporta a CSV o PDF, o programa el envío automático por correo con la frecuencia que elijas.
+Criterio de fechas.
+ Los informes de rendimiento se calculan por 
+noche consumida
+     y los de producción por 
+fecha de reserva
+. Mezclar ambos criterios es la causa habitual de que dos
+     informes «no cuadren»: no miden lo mismo.
+10
+Integraciones
+Panel de conexiones con servicios externos: distribución, pagos, mensajería, IA, cumplimiento
+     legal, contabilidad, cerraduras y precios dinámicos.
+Objetivo
+Centralizar el alta, el estado de salud y los registros de error de cada conexión, para que un fallo de
+     sincronización se detecte antes de convertirse en overbooking.
+Qué muestra cada tarjeta
+Estado:
+Conectado
+Con avisos
+Error
+Sin configurar
+Última sincronización
+ y número de operaciones del día.
+Errores recientes
+, con posibilidad de reintentar el envío fallido.
+Configuración:
+ credenciales, mapeos y webhooks.
+Familias de integración
+Familia
+Función
+Qué vigilar
+Channel manager
+Publica disponibilidad y precios en OTAs y recoge las reservas entrantes.
+El mapeo entre tipos locales y los de cada OTA. Un mapeo mal hecho vende lo que no existe.
+Pagos
+Cobros con tarjeta, enlaces de pago, tokenización y autenticación reforzada.
+Nunca se almacena el número de tarjeta: solo el token del proveedor.
+Mensajería
+WhatsApp, Telegram y correo transaccional conectados al Inbox.
+Plantillas aprobadas, reputación del remitente y registros de entrega.
+Inteligencia artificial
+Copiloto de respuestas, resúmenes de conversación y sugerencias de precio.
+Qué datos se envían al proveedor y con qué base legal; revisar siempre antes de enviar.
+Cumplimiento
+Comunicación de viajeros a la administración y sistema de facturación verificable.
+Los plazos regulatorios en España han cambiado varias veces; confirma el calendario vigente con tu asesoría.
+ERP y contabilidad
+Envío de facturas, cobros y asientos al software administrativo.
+Mapeo de cuentas y tipos impositivos; conciliar mensualmente.
+Cerraduras y accesos
+Generación de códigos de entrada ligados a la estancia.
+Que el código caduque al check-out y se regenere si la reserva cambia.
+Cómo se interactúa
+Pulsa «Conectar» e introduce las credenciales del proveedor. El sistema valida la conexión antes de guardar.
+Completa el mapeo: tipos de unidad, planes tarifarios, métodos de pago o cuentas contables, según el caso.
+Ejecuta una prueba en modo sandbox y revisa el registro de la operación.
+Activa en producción y define a quién se notifica si la integración falla.
+Revisa semanalmente las tarjetas en ámbar: suelen ser avisos que preceden a un error real.
+Regla de oro de la distribución:
+ cuando una conexión de canal está en error,
+     cierra ventas en ese canal antes que seguir vendiendo a ciegas. Un overbooking cuesta mucho más que
+     unas horas sin publicar.
+↻
+Flujos diarios
+Secuencias de trabajo que atraviesan varias pantallas.
+Apertura de turno
+Dashboard: KPIs y centro de alertas.
+Resolver alertas rojas (overbooking, cobros).
+Planning: asignar las llegadas del día.
+Housekeeping: confirmar unidades listas para llegadas tempranas.
+Inbox: vaciar conversaciones sin leer.
+Venta telefónica
+Plano: fechas, ocupantes y filtros.
+Abrir detalle y leer el desglose al cliente.
+Añadir al carrito, varias habitaciones si es grupo.
+Confirmar con datos del titular y garantía.
+Enviar confirmación desde el Inbox.
+Check-in
+Buscar por localizador con 
+⌘
++
+K
+.
+Completar datos y documentación de todos los huéspedes.
+Verificar la unidad asignada y su estado de limpieza.
+Cobrar saldo pendiente y depósito si aplica.
+Pasar la reserva a «Alojado» y entregar accesos.
+Cierre de día
+Marcar los no-shows pendientes.
+Housekeeping: dejar el tablero al día.
+Reportes: informe de caja y conciliación.
+Integraciones: revisar errores de sincronización.
+Tarifas: ajustar precios de los próximos días según pickup.
+A
+Glosario de KPIs y términos
+Término
+Definición
+ADR
+Tarifa media diaria: ingreso por alojamiento dividido entre noches vendidas. No incluye extras.
+ADR neto
+Igual, pero descontando comisiones de canal. Es la cifra que de verdad entra.
+RevPAR
+Ingreso por habitación disponible: ocupación × ADR. Mide el aprovechamiento del inventario.
+RevPAB
+La misma idea aplicada a camas, propia de hostels.
+ALOS
+Estancia media en noches. Subirla reduce costes de limpieza y rotación.
+Pickup
+Reservas nuevas captadas en un periodo. Mide el ritmo de entrada de negocio.
+Pace
+Comparación del nivel de reservas de una fecha futura con el que había el año anterior a la misma distancia.
+Stop-sell
+Cierre total de ventas para una fecha y tipo.
+CTA / CTD
+Cerrado a la llegada / a la salida.
+Overbooking
+Vender por encima del inventario real, de forma deliberada y acotada, para compensar cancelaciones.
+Fuera de servicio
+Unidad no vendible por avería u obra; resta inventario.
+Folio
+Cuenta de la estancia: cargos, pagos y saldo.
+Localizador
+Código único de la reserva.
+Tipo de unidad
+Lo que realmente se vende: un conjunto de unidades intercambiables.
+⌘
+Atajos de teclado
+⌘
+/
+Ctrl
++
+K
+Buscador global
+G
+ luego 
+D
+Ir al Dashboard
+G
+ luego 
+P
+Ir al Planning
+G
+ luego 
+L
+Ir al Plano
+G
+ luego 
+R
+Ir a Reservas
+N
+Nueva reserva
+←
+→
+Avanzar fechas en Planning
+Shift
++rueda
+Desplazamiento horizontal
+Esc
+Cerrar panel o cancelar arrastre
+?
+Mostrar esta lista en la aplicación
+!
+Problemas frecuentes
+Síntoma
+Causa habitual
+Solución
+«Veo la habitación libre pero no deja reservar»
+El tipo está agotado por reservas sin asignar, o hay estancia mínima, CTA o stop-sell en esa fecha.
+Comprobar la fila de restricciones en Tarifas para ese día y tipo.
+Un canal no recibe los precios nuevos
+Cambios sin publicar, o integración en error.
+Publicar los cambios pendientes y revisar la tarjeta del canal en Integraciones.
+Dos informes dan cifras distintas
+Uno calcula por noche consumida y otro por fecha de reserva.
+Igualar el criterio de fecha y el filtro de propiedad.
+Un descuento se aplica donde no debería
+Confusión entre ventana de reserva y ventana de estancia, o acumulabilidad abierta.
+Revisar ambas ventanas y la prioridad en Promos, y validar en el simulador.
+El precio de una reserva no coincide con la tarifa actual
+Comportamiento correcto: los precios se congelan al vender.
+Si procede ajustar, hacerlo desde el folio con motivo.
+Riesgo de overbooking en el Dashboard
+Margen de sobreventa consumido o unidad puesta fuera de servicio después de vender.
+Cerrar ventas del tipo, reubicar en el Planning y, si no cabe, gestionar realojo.
+No puedo responder por WhatsApp
+La ventana de respuesta libre ha caducado.
+Usar una plantilla aprobada o cambiar de canal (correo o teléfono).
+Aviso.
+ Este manual describe el funcionamiento del prototipo y recoge criterios operativos
+    generales del sector. Las referencias a obligaciones legales españolas (registro de viajeros,
+    facturación verificable, protección de datos, tasas turísticas) son orientativas y cambian con
+    frecuencia: contrástalas con tu asesor y con las fuentes oficiales antes de configurar el sistema en
+    producción.
+↑

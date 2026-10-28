@@ -1,0 +1,408 @@
+
+StayCore PMS · Fases, pagos y conectividad OTA
+SC
+Hoja de fases, pagos y conectividad
+StayCore PMS · diagramas de flujo e integración
+◐ Tema
+⎙ Imprimir
+Tres fases secuenciales. El núcleo del PMS se construye y se vende primero; los pagos
+y la distribución se enchufan después sobre una base que ya es fiable. La condición para que eso funcione
+es dejar preparados en la fase 1 los puntos de anclaje que aparecen marcados como 
+ganchos
+.
+1
+Mapa de fases
+Cada fase entrega un producto utilizable por sí mismo. Ninguna depende de que la siguiente
+exista.
+1
+Núcleo PMS
+Operativa · meses 0–4
+Dominio e inventario por tipo
+Reservas y máquina de estados
+Planning, Plano, Housekeeping
+Tarifas, restricciones, promos
+Folio con cargos y pagos
+Reportes y multi-tenant (RLS)
+Auditoría inmutable
+Cobro:
+ manual. Efectivo, datáfono y transferencia se registran en el folio.
+        Enlace de pago generado fuera y pegado a mano.
+Canales:
+ venta directa, teléfono y walk-in. Reservas de OTA cargadas a mano.
+2
+Pagos
+Monetización · meses 4–7
+Pasarela con checkout alojado
+Tokenización de medios de pago
+Webhooks firmados e idempotentes
+Cobros diferidos: no-show, daños
+Enlaces de pago y depósitos
+Conciliación y export a ERP
+Split / cuentas conectadas
+Desbloquea:
+ prepago, garantía de reserva, política de cancelación
+        automática y cierre de caja sin hojas de cálculo.
+3
+Distribución OTA
+Escala · meses 7–12
+Channel manager white-label
+Mapeo tipo ↔ listing / room code
+Cola ARI con debounce y coalescing
+Reservas entrantes idempotentes
+Guardia de overbooking
+Check-in en línea para datos legales
+Comisión y ADR neto por canal
+Desbloquea:
+ Airbnb, Booking, Expedia, Hostelworld y Despegar sin recarga
+        manual ni riesgo de doble venta.
+Regla de corte entre fases:
+ no se pasa a la siguiente hasta que la anterior
+tenga un hotel real operando en producción durante al menos un mes completo. Integrar canales sobre un
+inventario que todavía falla multiplica los errores en lugar de sumarlos.
+2
+Ganchos que la fase 1 debe dejar listos
+Son decisiones baratas hoy y muy caras de introducir después, porque obligan a migrar datos
+ya en producción.
+Gancho
+Qué se construye en fase 1
+Lo habilita en
+Fuente única de inventario
+inventory_day
+ con bloqueo pesimista al decrementar y restricción de no superar el total disponible.
+Fase 3 · evita doble venta
+Patrón outbox
+Tabla 
+outbox_event
+ escrita en la misma transacción que el cambio de negocio, más un worker que la drena. Al principio solo alimenta el log.
+Fases 2 y 3 · publicación fiable
+Referencia externa e idempotencia
+external_ref
+ y 
+idempotency_key
+ en reserva y en movimiento de folio, con índice único, aunque todo se cree a mano.
+Fases 2 y 3 · reintentos seguros
+Canal y comisión en la reserva
+Campos 
+channel
+, 
+commission_amount
+ y 
+net_amount
+ desde el día uno, con canal 
+direct
+ por defecto.
+Fase 3 · ADR neto real
+Folio con líneas tipadas
+Cargos y pagos como líneas independientes con estado propio, no un campo «pagado» booleano.
+Fase 2 · cobros parciales y diferidos
+Modelo de pago por canal
+Campo que distingue si cobra la plataforma o el alojamiento. En fase 1 siempre es «alojamiento».
+Fase 3 · Airbnb no deja saldo pendiente
+Bóveda de credenciales
+Almacén cifrado de secretos por tenant y por entorno, aunque solo guarde el SMTP.
+Fases 2 y 3 · claves de proveedor
+Receptor de webhooks
+Endpoint genérico que verifica firma, deduplica por ID y encola; responde 200 rápido y procesa aparte.
+Fases 2 y 3 · todo lo entrante
+Precios congelados
+Cada noche guarda el importe con el que se vendió. Nunca se recalcula.
+Las tres · integridad contable
+3
+Arquitectura objetivo y puntos de enganche
+El dominio nunca habla directamente con un proveedor. Entre medias hay siempre una capa
+anticorrupción que traduce y aísla.
+Capa de canales y proveedores (fases 2 y 3)
+OTAs
+Airbnb · Booking · Expedia · Hostelworld · Despegar
+↔
+Channel manager
+Una sola API para todos los canales
+↔
+Pasarela
+Wompi · Mercado Pago · PayPal
+↔
+ERP / contable
+Facturas y asientos
+➜
+Capa anticorrupción · adaptadores (lo que tú escribes)
+Adaptador de canal
+Mapeo, traducción ARI, normalización de reservas
+·
+Adaptador de pagos
+Tokens, intenciones de cobro, reembolsos
+·
+Receptor de webhooks
+Firma, deduplicación, encolado
+·
+Publicador outbox
+Debounce, coalescing, reintento
+➜
+Núcleo de dominio (fase 1 · no se toca al añadir proveedores)
+Inventario
+inventory_day · rate_day
+·
+Reservas
+booking · booking_night
+·
+Folio
+cargos y pagos
+·
+Operativa
+planning · housekeeping
+·
+Auditoría
+log inmutable
+Por qué importa:
+ si mañana cambias de channel manager o de pasarela, reescribes
+  un adaptador y nada más. Si el proveedor se filtra al dominio, el cambio es un proyecto entero.
+4
+Fase 2 · Flujo de pagos
+El principio que gobierna todo el diseño: el número de tarjeta no entra nunca en tu
+sistema. Solo entra un token.
+4.1 · Cobro de una reserva con checkout alojado
+Huésped
+Front PMS
+Backend
+Pasarela
+Banco / red
+1
+ Confirma reserva y elige pagar
+2
+ Solicita intención de cobro (importe, moneda, referencia)
+3
+ Crea transacción + firma de integridad 
+servidor a servidor
+4
+ Devuelve URL de checkout o token de widget
+5
+ El huésped introduce la tarjeta 
+dentro del entorno de la pasarela
+6
+ Autorización y 3-D Secure
+7
+ Resultado de la autorización
+8
+ Redirección del navegador al PMS 
+⚠ no confiar
+9
+Webhook firmado
+ con el estado definitivo
+10
+ Folio cobrado · reserva garantizada · recibo
+El paso 8 es una trampa.
+ La redirección del navegador puede falsificarse y
+  puede no llegar nunca si el huésped cierra la pestaña. La reserva solo se marca como pagada en el paso 9,
+  con el webhook verificado servidor a servidor.
+4.2 · Procesamiento de un webhook de pago
+1 · Recibir
+POST con JSON del evento
+➜
+2 · Verificar firma
+Checksum con el secreto de eventos. Si no coincide, descartar
+➜
+3 · Deduplicar
+¿Ya procesé este ID de transacción?
+➜
+4 · Encolar
+Responder 200 de inmediato
+➜
+5 · Aplicar
+Línea de pago en el folio, estado de reserva, recibo
+Dos detalles que rompen integraciones en producción:
+ el conjunto de campos que
+  entra en el checksum puede variar, así que debe leerse del propio evento y no codificarse fijo; y el
+  secreto de eventos no es la llave privada de la cuenta. Además, si tu endpoint no responde 200, el
+  proveedor reintentará un número limitado de veces y con horas de separación, no de inmediato.
+4.3 · Cobros diferidos sin guardar la tarjeta
+Primer pago
+El huésped paga en el checkout de la pasarela
+➜
+Token
+El proveedor custodia el dato y te devuelve una referencia reutilizable
+➜
+Se guarda
+Solo el token, el tipo y los últimos 4 dígitos
+➜
+Evento posterior
+No-show, penalización, daños, extra al check-out
+➜
+Cargo
+Contra el token, con motivo y auditoría
+Modelo A · cuentas conectadas 
+(recomendado)
+Huésped paga
+Importe total
+➜
+Pasarela divide
+Split automático
+➜
+Hotel
+ recibe su liquidación · 
+Tu SaaS
+ recibe la comisión
+No custodias fondos ajenos, no asumes
+    contracargos y no te conviertes en agregador de pagos, figura que en varios países exige licencia.
+Modelo B · cuenta única tuya 
+(evitar)
+Huésped paga
+Todo a tu cuenta
+➜
+Retienes el dinero
+Eres intermediario financiero
+➜
+Liquidas tú
+Riesgo, obligaciones y contabilidad propias
+Más simple al principio y mucho más caro
+    después. Solo con asesoría legal y fiscal específica.
+5
+Fase 3 · Conectividad con OTAs
+Dos flujos independientes y permanentes: lo que tú publicas hacia fuera y lo que te llega
+de vuelta. El primero debe ser perezoso y agrupado; el segundo, inmediato e idempotente.
+Tu sistema
+Canal externo
+Punto de control
+Riesgo
+5.1 · Saliente · publicación de disponibilidad y precios (ARI)
+1 · Cambio
+Edición de tarifa, bloqueo o venta directa
+➜
+2 · Outbox
+Evento escrito en la misma transacción
+➜
+3 · Debounce
+Espera 30–60 s y agrupa ediciones seguidas
+➜
+4 · Coalescing
+Rangos contiguos con el mismo valor en un solo mensaje
+➜
+5 · Diff
+Compara con lo último publicado y descarta lo idéntico
+6 · Cola por hotel
+Un único worker activo por propiedad, sin concurrencia
+➜
+7 · Envío
+Al channel manager o a la API del canal
+➜
+8 · Resultado
+Éxito, aviso o error en el panel de Integraciones
+➜
+9 · Backoff
+Reintento solo si el error es transitorio
+Los pasos 3, 4, 5 y 6 no son optimizaciones, son requisitos.
+ Los canales imponen
+  límites de peticiones por segundo, por minuto y por día, y algunos prohíben actualizaciones concurrentes
+  sobre el mismo hotel. Resincronizar un año entero tras cada edición menor agota la cuota y deja el
+  inventario desactualizado justo cuando más importa.
+5.2 · Entrante · llega una reserva desde el canal
+OTA
+Channel manager
+Adaptador
+Dominio PMS
+1
+ Venta cerrada en el canal
+2
+ Push a tu endpoint, o pull periódico si no hay push
+3
+ Verificar credenciales y firma
+4
+ ¿Existe ya esta referencia externa? Si sí, responder 200 y salir
+5
+ Traducir códigos remotos a tipo y plan locales
+6
+ Transacción: bloquear inventario, descontar, crear reserva con precios congelados
+7
+ Marcar modelo de pago según el canal
+8
+ Responder HTTP 200 
+obligatorio
+9
+ Asíncrono: recalcular y republicar disponibilidad al resto de canales
+Si el inventario ya está agotado, la reserva se acepta igualmente.
+ El canal ya
+  la vendió y rechazarla no la deshace: se crea, se marca sobreventa y se levanta alerta en el dashboard
+  para que recepción reubique. Devolver un error solo provoca que el canal reintente indefinidamente.
+5.3 · La ventana de doble venta, según el método
+Push / webhook · segundos
+Pull periódico · minutos
+iCal · hasta 12 horas
+0
+1 min
+15 min
+12 h
+La barra representa el tiempo durante el cual
+  tu PMS no sabe que el canal ya vendió. Toda esa franja es riesgo de doble venta. Por eso iCal sirve para
+  un anfitrión con dos apartamentos, pero no para un producto que promete evitar overbooking.
+Defensas acumulativas
+Fuente única
+Todo descuento pasa por inventory_day con bloqueo
++
+Reserva de seguridad
+No publicar la última unidad en todos los canales a la vez
++
+Idempotencia
+Índice único por referencia externa
++
+Alerta activa
+Detección y reubicación antes de la llegada
+5.4 · Particularidades que absorbe la tabla de mapeo
+Canal
+Modelo de inventario
+Quién cobra
+Acceso
+Airbnb
+Listing = unidad física. Sin concepto de cama vendible en dormitorio compartido.
+La plataforma. La reserva entra pagada, no deja saldo pendiente.
+Cerrado · solo vía partner aprobado o channel manager
+Despegar
+Allotment por habitación y plan tarifario, mensajes OTA en XML.
+Según acuerdo. Comisión declarada en la propia conexión.
+Certificación como channel manager, o vía uno existente
+Booking · Expedia
+Tipo de habitación con allotment, soporte completo de restricciones.
+Normalmente el alojamiento, salvo pago en plataforma.
+Vía channel manager
+Hostelworld
+Modela camas en dormitorio, el único que encaja de forma nativa con hostels.
+Depósito en plataforma, resto en el alojamiento.
+Vía channel manager
+Todo esto vive en una sola tabla de mapeo
+ con campos como referencia externa,
+  si vende la unidad completa, modelo de pago, modelo de comisión y qué restricciones soporta. Así el
+  dominio no se entera de las diferencias entre canales.
+6
+Riesgos por fase y mitigación
+Fase
+Riesgo
+Mitigación
+1
+Modelo de inventario mal planteado
+Validar con los tres verticales antes de escribir la primera migración. Un hostel, un apartamento y un rural sobre el mismo esquema.
+1
+Condiciones de carrera al vender
+Bloqueo pesimista y restricción de integridad en base de datos. Probarlo con carga concurrente, no solo a mano.
+2
+Alcance PCI más amplio de lo necesario
+Checkout alojado o widget del proveedor. Si el dato de tarjeta no pasa por tus servidores, el cumplimiento se simplifica drásticamente.
+2
+Webhooks duplicados o falsificados
+Verificación de firma obligatoria y deduplicación por identificador de transacción antes de aplicar nada.
+2
+Pagos pendientes que no resuelven
+Política explícita de cuánto tiempo se retiene inventario con un pago en curso, y liberación automática al expirar.
+3
+Mapeo incorrecto de tipos
+Asistente de mapeo obligatorio al conectar, con vista previa de lo que se publicará y confirmación explícita del hotel.
+3
+Cuota de peticiones agotada
+Debounce, coalescing y diff desde el primer día. Monitorizar respuestas de límite excedido como métrica de primer nivel.
+3
+Datos legales incompletos en reservas de OTA
+Check-in en línea propio enviado tras la confirmación, por el canal de mensajería del huésped.
+3
+Canal en error vendiendo a ciegas
+Cierre automático de ventas en ese canal cuando la integración lleva un tiempo en fallo, y aviso al responsable.
+Aviso.
+ Los plazos indicados son orientativos y dependen del tamaño del equipo. Las condiciones de
+  acceso de cada OTA, las tarifas de las pasarelas y las obligaciones legales aplicables cambian con
+  frecuencia: contrástalas con la documentación oficial vigente y con tu asesoría antes de comprometer
+  fechas o arquitectura.

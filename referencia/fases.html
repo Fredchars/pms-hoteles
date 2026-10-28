@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StayCore PMS · Fases, pagos y conectividad OTA</title>
+<style>
+:root{
+  --bg:#f7f7f8; --bg2:#ffffff; --card:#ffffff; --card2:#f2f2f4; --line:#e2e2e6;
+  --tx:#1a1a1d; --tx2:#55555f; --tx3:#8a8a94;
+  --f1:#3b63d4; --f2:#1f9d55; --f3:#7c5cd6;
+  --acc:#0f8ea4; --warn:#c77a06; --bad:#d03a3a;
+  --shadow:0 6px 18px rgba(0,0,0,.06); --r:14px;
+}
+html[data-theme="dark"]{
+  --bg:#141416; --bg2:#1a1a1d; --card:#1e1e22; --card2:#26262b; --line:#34343a;
+  --tx:#ededf0; --tx2:#a6a6b0; --tx3:#75757f;
+  --f1:#7b9bff; --f2:#4ec27c; --f3:#b29bf0;
+  --acc:#4fc8db; --warn:#e0a036; --bad:#ef6b6b;
+  --shadow:0 10px 26px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);
+  font:15px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;padding:34px 30px 90px}
+.wrap{max-width:1180px;margin:0 auto}
+
+.head{display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+.logo{width:40px;height:40px;border-radius:12px;background:var(--tx);
+  display:grid;place-items:center;font-weight:800;color:var(--bg2);font-size:14px}
+h1{font-size:25px;letter-spacing:-.5px}
+.sub{color:var(--tx3);font-size:12.5px}
+.tools{margin-left:auto;display:flex;gap:8px}
+.tools button{padding:8px 14px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);color:var(--tx2);font-size:12.5px;cursor:pointer}
+.tools button:hover{color:var(--tx);border-color:var(--tx3)}
+.intro{color:var(--tx2);max-width:92ch;margin-bottom:26px}
+
+h2{font-size:19px;margin:38px 0 6px;display:flex;align-items:center;gap:10px;letter-spacing:-.2px}
+h2 .n{width:27px;height:27px;border-radius:9px;background:var(--card2);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:12px;color:var(--tx2);font-weight:700;flex:0 0 27px}
+.lead{color:var(--tx2);margin-bottom:16px;max-width:90ch}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);
+  margin:24px 0 10px;font-weight:700}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.panel.flat{box-shadow:none;background:var(--card2)}
+
+/* ====== TIMELINE DE FASES ====== */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;position:relative}
+.ph{border:1px solid var(--line);border-radius:var(--r);background:var(--card);
+  padding:0;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.ph .top{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.ph .dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  font-weight:800;font-size:13px;color:#fff;flex:0 0 30px}
+.ph1 .dot{background:var(--f1)} .ph2 .dot{background:var(--f2)} .ph3 .dot{background:var(--f3)}
+.ph1{border-top:3px solid var(--f1)} .ph2{border-top:3px solid var(--f2)} .ph3{border-top:3px solid var(--f3)}
+.ph .top b{display:block;font-size:14.5px}
+.ph .top span{font-size:11.5px;color:var(--tx3)}
+.ph .bd{padding:14px 16px;flex:1}
+.ph ul{list-style:none;font-size:13px}
+.ph li{color:var(--tx2);padding:4px 0 4px 18px;position:relative}
+.ph li::before{content:"▸";position:absolute;left:0;color:var(--tx3)}
+.ph .goal{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--card2);
+  border:1px dashed var(--line);font-size:12.5px;color:var(--tx2)}
+.ph .goal b{color:var(--tx)}
+@media(max-width:900px){.phases{grid-template-columns:1fr}}
+
+/* ====== CADENAS DE NODOS ====== */
+.chain{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:6px 0 10px}
+.node{flex:1;min-width:132px;background:var(--card2);border:1px solid var(--line);
+  border-radius:11px;padding:11px 12px;font-size:12.5px;color:var(--tx2);position:relative}
+.node b{display:block;color:var(--tx);font-size:13px;margin-bottom:3px}
+.node.k1{border-color:color-mix(in srgb,var(--f1) 45%,transparent);
+  background:color-mix(in srgb,var(--f1) 9%,var(--card))}
+.node.k2{border-color:color-mix(in srgb,var(--f2) 45%,transparent);
+  background:color-mix(in srgb,var(--f2) 9%,var(--card))}
+.node.k3{border-color:color-mix(in srgb,var(--f3) 45%,transparent);
+  background:color-mix(in srgb,var(--f3) 9%,var(--card))}
+.node.kw{border-color:color-mix(in srgb,var(--warn) 45%,transparent);
+  background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+.node.kb{border-color:color-mix(in srgb,var(--bad) 45%,transparent);
+  background:color-mix(in srgb,var(--bad) 9%,var(--card))}
+.arr{flex:0 0 34px;display:grid;place-items:center;color:var(--tx3);font-size:17px}
+.arr.dn{transform:rotate(90deg)}
+
+/* ====== SWIMLANE / SECUENCIA ====== */
+.seq{position:relative;padding:0 0 6px}
+.seqHead{display:grid;gap:0;margin-bottom:8px}
+.seqHead div{text-align:center;font-size:11.5px;font-weight:700;color:var(--tx2);
+  background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:7px 4px;margin:0 3px}
+.lanes{position:relative;display:grid;gap:7px;padding:8px 0}
+.lanes::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(to right,transparent calc(50% - .5px),var(--line) calc(50% - .5px),
+    var(--line) calc(50% + .5px),transparent calc(50% + .5px));}
+.msg{position:relative;z-index:1;border-radius:9px;padding:7px 11px;font-size:12.5px;
+  background:var(--card);border:1px solid var(--line);color:var(--tx2);
+  display:flex;align-items:center;gap:8px;box-shadow:var(--shadow);margin:0 4px}
+.msg i{font-style:normal;font-size:10.5px;font-weight:800;color:var(--tx2);
+  background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;flex:0 0 auto}
+.msg.ok{border-color:color-mix(in srgb,var(--f2) 50%,transparent)}
+.msg.wn{border-color:color-mix(in srgb,var(--warn) 50%,transparent)}
+.msg.bd{border-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.msg.dash{border-style:dashed;background:transparent;box-shadow:none}
+.msg .rt{margin-left:auto;font-size:11px;color:var(--tx3);white-space:nowrap}
+
+/* ====== MISC ====== */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--tx3);padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--tx2);vertical-align:top}
+td b{color:var(--tx)}
+tr:last-child td{border-bottom:none}
+code{font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--card2);
+  border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--tx)}
+.note{border-left:3px solid var(--tx3);background:var(--card2);padding:12px 15px;
+  border-radius:0 10px 10px 0;margin:14px 0;font-size:13.5px;color:var(--tx2)}
+.note.w{border-color:var(--warn)} .note.b{border-color:var(--bad)} .note.g{border-color:var(--f2)}
+.note b{color:var(--tx)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.lg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);
+  background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.sw{width:12px;height:12px;border-radius:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+/* barra de ventana de riesgo */
+.tl{margin:10px 0 4px}
+.tlbar{height:34px;border-radius:9px;overflow:hidden;display:flex;border:1px solid var(--line)}
+.tlbar span{display:grid;place-items:center;font-size:11px;color:#fff;font-weight:700}
+.tlx{display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-top:5px}
+
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  .tools{display:none}
+  .panel,.ph{box-shadow:none;break-inside:avoid}
+  h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div class="logo">SC</div>
+  <div>
+    <h1>Hoja de fases, pagos y conectividad</h1>
+    <div class="sub">StayCore PMS · diagramas de flujo e integración</div>
+  </div>
+  <div class="tools">
+    <button onclick="tt()">◐ Tema</button>
+    <button onclick="print()">⎙ Imprimir</button>
+  </div>
+</div>
+
+<p class="intro">Tres fases secuenciales. El núcleo del PMS se construye y se vende primero; los pagos
+y la distribución se enchufan después sobre una base que ya es fiable. La condición para que eso funcione
+es dejar preparados en la fase 1 los puntos de anclaje que aparecen marcados como <b>ganchos</b>.</p>
+
+<!-- ============ 1 MAPA DE FASES ============ -->
+<h2><span class="n">1</span>Mapa de fases</h2>
+<p class="lead">Cada fase entrega un producto utilizable por sí mismo. Ninguna depende de que la siguiente
+exista.</p>
+
+<div class="phases">
+  <div class="ph ph1">
+    <div class="top"><div class="dot">1</div><div><b>Núcleo PMS</b><span>Operativa · meses 0–4</span></div></div>
+    <div class="bd">
+      <ul>
+        <li>Dominio e inventario por tipo</li>
+        <li>Reservas y máquina de estados</li>
+        <li>Planning, Plano, Housekeeping</li>
+        <li>Tarifas, restricciones, promos</li>
+        <li>Folio con cargos y pagos</li>
+        <li>Reportes y multi-tenant (RLS)</li>
+        <li>Auditoría inmutable</li>
+      </ul>
+      <div class="goal"><b>Cobro:</b> manual. Efectivo, datáfono y transferencia se registran en el folio.
+        Enlace de pago generado fuera y pegado a mano.</div>
+      <div class="goal"><b>Canales:</b> venta directa, teléfono y walk-in. Reservas de OTA cargadas a mano.</div>
+    </div>
+  </div>
+  <div class="ph ph2">
+    <div class="top"><div class="dot">2</div><div><b>Pagos</b><span>Monetización · meses 4–7</span></div></div>
+    <div class="bd">
+      <ul>
+        <li>Pasarela con checkout alojado</li>
+        <li>Tokenización de medios de pago</li>
+        <li>Webhooks firmados e idempotentes</li>
+        <li>Cobros diferidos: no-show, daños</li>
+        <li>Enlaces de pago y depósitos</li>
+        <li>Conciliación y export a ERP</li>
+        <li>Split / cuentas conectadas</li>
+      </ul>
+      <div class="goal"><b>Desbloquea:</b> prepago, garantía de reserva, política de cancelación
+        automática y cierre de caja sin hojas de cálculo.</div>
+    </div>
+  </div>
+  <div class="ph ph3">
+    <div class="top"><div class="dot">3</div><div><b>Distribución OTA</b><span>Escala · meses 7–12</span></div></div>
+    <div class="bd">
+      <ul>
+        <li>Channel manager white-label</li>
+        <li>Mapeo tipo ↔ listing / room code</li>
+        <li>Cola ARI con debounce y coalescing</li>
+        <li>Reservas entrantes idempotentes</li>
+        <li>Guardia de overbooking</li>
+        <li>Check-in en línea para datos legales</li>
+        <li>Comisión y ADR neto por canal</li>
+      </ul>
+      <div class="goal"><b>Desbloquea:</b> Airbnb, Booking, Expedia, Hostelworld y Despegar sin recarga
+        manual ni riesgo de doble venta.</div>
+    </div>
+  </div>
+</div>
+
+<div class="note g"><b>Regla de corte entre fases:</b> no se pasa a la siguiente hasta que la anterior
+tenga un hotel real operando en producción durante al menos un mes completo. Integrar canales sobre un
+inventario que todavía falla multiplica los errores en lugar de sumarlos.</div>
+
+<!-- ============ 2 GANCHOS ============ -->
+<h2><span class="n">2</span>Ganchos que la fase 1 debe dejar listos</h2>
+<p class="lead">Son decisiones baratas hoy y muy caras de introducir después, porque obligan a migrar datos
+ya en producción.</p>
+
+<div class="panel">
+<table>
+  <tr><th style="width:26%">Gancho</th><th>Qué se construye en fase 1</th><th style="width:22%">Lo habilita en</th></tr>
+  <tr><td><b>Fuente única de inventario</b></td>
+      <td><code>inventory_day</code> con bloqueo pesimista al decrementar y restricción de no superar el total disponible.</td>
+      <td>Fase 3 · evita doble venta</td></tr>
+  <tr><td><b>Patrón outbox</b></td>
+      <td>Tabla <code>outbox_event</code> escrita en la misma transacción que el cambio de negocio, más un worker que la drena. Al principio solo alimenta el log.</td>
+      <td>Fases 2 y 3 · publicación fiable</td></tr>
+  <tr><td><b>Referencia externa e idempotencia</b></td>
+      <td><code>external_ref</code> y <code>idempotency_key</code> en reserva y en movimiento de folio, con índice único, aunque todo se cree a mano.</td>
+      <td>Fases 2 y 3 · reintentos seguros</td></tr>
+  <tr><td><b>Canal y comisión en la reserva</b></td>
+      <td>Campos <code>channel</code>, <code>commission_amount</code> y <code>net_amount</code> desde el día uno, con canal <code>direct</code> por defecto.</td>
+      <td>Fase 3 · ADR neto real</td></tr>
+  <tr><td><b>Folio con líneas tipadas</b></td>
+      <td>Cargos y pagos como líneas independientes con estado propio, no un campo «pagado» booleano.</td>
+      <td>Fase 2 · cobros parciales y diferidos</td></tr>
+  <tr><td><b>Modelo de pago por canal</b></td>
+      <td>Campo que distingue si cobra la plataforma o el alojamiento. En fase 1 siempre es «alojamiento».</td>
+      <td>Fase 3 · Airbnb no deja saldo pendiente</td></tr>
+  <tr><td><b>Bóveda de credenciales</b></td>
+      <td>Almacén cifrado de secretos por tenant y por entorno, aunque solo guarde el SMTP.</td>
+      <td>Fases 2 y 3 · claves de proveedor</td></tr>
+  <tr><td><b>Receptor de webhooks</b></td>
+      <td>Endpoint genérico que verifica firma, deduplica por ID y encola; responde 200 rápido y procesa aparte.</td>
+      <td>Fases 2 y 3 · todo lo entrante</td></tr>
+  <tr><td><b>Precios congelados</b></td>
+      <td>Cada noche guarda el importe con el que se vendió. Nunca se recalcula.</td>
+      <td>Las tres · integridad contable</td></tr>
+</table>
+</div>
+
+<!-- ============ 3 ARQUITECTURA ============ -->
+<h2><span class="n">3</span>Arquitectura objetivo y puntos de enganche</h2>
+<p class="lead">El dominio nunca habla directamente con un proveedor. Entre medias hay siempre una capa
+anticorrupción que traduce y aísla.</p>
+
+<div class="panel">
+  <h3>Capa de canales y proveedores (fases 2 y 3)</h3>
+  <div class="chain">
+    <div class="node k3"><b>OTAs</b>Airbnb · Booking · Expedia · Hostelworld · Despegar</div>
+    <div class="arr">↔</div>
+    <div class="node k3"><b>Channel manager</b>Una sola API para todos los canales</div>
+    <div class="arr">↔</div>
+    <div class="node k2"><b>Pasarela</b>Wompi · Mercado Pago · PayPal</div>
+    <div class="arr">↔</div>
+    <div class="node kw"><b>ERP / contable</b>Facturas y asientos</div>
+  </div>
+  <div class="chain"><div class="arr dn" style="flex:1">➜</div></div>
+
+  <h3>Capa anticorrupción · adaptadores (lo que tú escribes)</h3>
+  <div class="chain">
+    <div class="node k1"><b>Adaptador de canal</b>Mapeo, traducción ARI, normalización de reservas</div>
+    <div class="arr">·</div>
+    <div class="node k1"><b>Adaptador de pagos</b>Tokens, intenciones de cobro, reembolsos</div>
+    <div class="arr">·</div>
+    <div class="node k1"><b>Receptor de webhooks</b>Firma, deduplicación, encolado</div>
+    <div class="arr">·</div>
+    <div class="node k1"><b>Publicador outbox</b>Debounce, coalescing, reintento</div>
+  </div>
+  <div class="chain"><div class="arr dn" style="flex:1">➜</div></div>
+
+  <h3>Núcleo de dominio (fase 1 · no se toca al añadir proveedores)</h3>
+  <div class="chain">
+    <div class="node"><b>Inventario</b>inventory_day · rate_day</div>
+    <div class="arr">·</div>
+    <div class="node"><b>Reservas</b>booking · booking_night</div>
+    <div class="arr">·</div>
+    <div class="node"><b>Folio</b>cargos y pagos</div>
+    <div class="arr">·</div>
+    <div class="node"><b>Operativa</b>planning · housekeeping</div>
+    <div class="arr">·</div>
+    <div class="node"><b>Auditoría</b>log inmutable</div>
+  </div>
+
+  <div class="note"><b>Por qué importa:</b> si mañana cambias de channel manager o de pasarela, reescribes
+  un adaptador y nada más. Si el proveedor se filtra al dominio, el cambio es un proyecto entero.</div>
+</div>
+
+<!-- ============ 4 FASE 2 PAGOS ============ -->
+<h2><span class="n">4</span>Fase 2 · Flujo de pagos</h2>
+<p class="lead">El principio que gobierna todo el diseño: el número de tarjeta no entra nunca en tu
+sistema. Solo entra un token.</p>
+
+<div class="panel">
+  <h3>4.1 · Cobro de una reserva con checkout alojado</h3>
+  <div class="seq">
+    <div class="seqHead" style="grid-template-columns:repeat(5,1fr)">
+      <div>Huésped</div><div>Front PMS</div><div>Backend</div><div>Pasarela</div><div>Banco / red</div>
+    </div>
+    <div class="lanes" style="--n:5;background-size:calc(100%/5) 100%">
+      <div class="msg" style="grid-column:1/3"><i>1</i> Confirma reserva y elige pagar</div>
+      <div class="msg" style="grid-column:2/4"><i>2</i> Solicita intención de cobro (importe, moneda, referencia)</div>
+      <div class="msg" style="grid-column:3/5"><i>3</i> Crea transacción + firma de integridad <span class="rt">servidor a servidor</span></div>
+      <div class="msg dash" style="grid-column:3/5"><i>4</i> Devuelve URL de checkout o token de widget</div>
+      <div class="msg ok" style="grid-column:1/5"><i>5</i> El huésped introduce la tarjeta <b>dentro del entorno de la pasarela</b></div>
+      <div class="msg" style="grid-column:4/6"><i>6</i> Autorización y 3-D Secure</div>
+      <div class="msg dash" style="grid-column:4/6"><i>7</i> Resultado de la autorización</div>
+      <div class="msg wn" style="grid-column:1/5"><i>8</i> Redirección del navegador al PMS <span class="rt">⚠ no confiar</span></div>
+      <div class="msg ok" style="grid-column:3/5"><i>9</i> <b>Webhook firmado</b> con el estado definitivo</div>
+      <div class="msg ok" style="grid-column:2/4"><i>10</i> Folio cobrado · reserva garantizada · recibo</div>
+    </div>
+  </div>
+  <div class="note b"><b>El paso 8 es una trampa.</b> La redirección del navegador puede falsificarse y
+  puede no llegar nunca si el huésped cierra la pestaña. La reserva solo se marca como pagada en el paso 9,
+  con el webhook verificado servidor a servidor.</div>
+</div>
+
+<div class="panel">
+  <h3>4.2 · Procesamiento de un webhook de pago</h3>
+  <div class="chain">
+    <div class="node k2"><b>1 · Recibir</b>POST con JSON del evento</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>2 · Verificar firma</b>Checksum con el secreto de eventos. Si no coincide, descartar</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>3 · Deduplicar</b>¿Ya procesé este ID de transacción?</div>
+    <div class="arr">➜</div>
+    <div class="node k1"><b>4 · Encolar</b>Responder 200 de inmediato</div>
+    <div class="arr">➜</div>
+    <div class="node k2"><b>5 · Aplicar</b>Línea de pago en el folio, estado de reserva, recibo</div>
+  </div>
+  <div class="note w"><b>Dos detalles que rompen integraciones en producción:</b> el conjunto de campos que
+  entra en el checksum puede variar, así que debe leerse del propio evento y no codificarse fijo; y el
+  secreto de eventos no es la llave privada de la cuenta. Además, si tu endpoint no responde 200, el
+  proveedor reintentará un número limitado de veces y con horas de separación, no de inmediato.</div>
+</div>
+
+<div class="panel">
+  <h3>4.3 · Cobros diferidos sin guardar la tarjeta</h3>
+  <div class="chain">
+    <div class="node k2"><b>Primer pago</b>El huésped paga en el checkout de la pasarela</div>
+    <div class="arr">➜</div>
+    <div class="node k1"><b>Token</b>El proveedor custodia el dato y te devuelve una referencia reutilizable</div>
+    <div class="arr">➜</div>
+    <div class="node k1"><b>Se guarda</b>Solo el token, el tipo y los últimos 4 dígitos</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>Evento posterior</b>No-show, penalización, daños, extra al check-out</div>
+    <div class="arr">➜</div>
+    <div class="node k2"><b>Cargo</b>Contra el token, con motivo y auditoría</div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="panel flat">
+    <h3 style="margin-top:0">Modelo A · cuentas conectadas <span style="color:var(--f2)">(recomendado)</span></h3>
+    <div class="chain" style="flex-direction:column;gap:7px">
+      <div class="node k2" style="width:100%"><b>Huésped paga</b>Importe total</div>
+      <div class="arr dn" style="flex:0 0 22px">➜</div>
+      <div class="node k1" style="width:100%"><b>Pasarela divide</b>Split automático</div>
+      <div class="arr dn" style="flex:0 0 22px">➜</div>
+      <div class="node" style="width:100%"><b>Hotel</b> recibe su liquidación · <b>Tu SaaS</b> recibe la comisión</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--tx2);margin-top:10px">No custodias fondos ajenos, no asumes
+    contracargos y no te conviertes en agregador de pagos, figura que en varios países exige licencia.</p>
+  </div>
+  <div class="panel flat">
+    <h3 style="margin-top:0">Modelo B · cuenta única tuya <span style="color:var(--bad)">(evitar)</span></h3>
+    <div class="chain" style="flex-direction:column;gap:7px">
+      <div class="node k2" style="width:100%"><b>Huésped paga</b>Todo a tu cuenta</div>
+      <div class="arr dn" style="flex:0 0 22px">➜</div>
+      <div class="node kb" style="width:100%"><b>Retienes el dinero</b>Eres intermediario financiero</div>
+      <div class="arr dn" style="flex:0 0 22px">➜</div>
+      <div class="node kb" style="width:100%"><b>Liquidas tú</b>Riesgo, obligaciones y contabilidad propias</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--tx2);margin-top:10px">Más simple al principio y mucho más caro
+    después. Solo con asesoría legal y fiscal específica.</p>
+  </div>
+</div>
+
+<!-- ============ 5 FASE 3 OTAS ============ -->
+<h2><span class="n">5</span>Fase 3 · Conectividad con OTAs</h2>
+<p class="lead">Dos flujos independientes y permanentes: lo que tú publicas hacia fuera y lo que te llega
+de vuelta. El primero debe ser perezoso y agrupado; el segundo, inmediato e idempotente.</p>
+
+<div class="legend">
+  <span class="lg"><i class="sw" style="background:var(--f1)"></i>Tu sistema</span>
+  <span class="lg"><i class="sw" style="background:var(--f3)"></i>Canal externo</span>
+  <span class="lg"><i class="sw" style="background:var(--warn)"></i>Punto de control</span>
+  <span class="lg"><i class="sw" style="background:var(--bad)"></i>Riesgo</span>
+</div>
+
+<div class="panel">
+  <h3>5.1 · Saliente · publicación de disponibilidad y precios (ARI)</h3>
+  <div class="chain">
+    <div class="node k1"><b>1 · Cambio</b>Edición de tarifa, bloqueo o venta directa</div>
+    <div class="arr">➜</div>
+    <div class="node k1"><b>2 · Outbox</b>Evento escrito en la misma transacción</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>3 · Debounce</b>Espera 30–60 s y agrupa ediciones seguidas</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>4 · Coalescing</b>Rangos contiguos con el mismo valor en un solo mensaje</div>
+    <div class="arr">➜</div>
+    <div class="node kw"><b>5 · Diff</b>Compara con lo último publicado y descarta lo idéntico</div>
+  </div>
+  <div class="chain">
+    <div class="node kw"><b>6 · Cola por hotel</b>Un único worker activo por propiedad, sin concurrencia</div>
+    <div class="arr">➜</div>
+    <div class="node k3"><b>7 · Envío</b>Al channel manager o a la API del canal</div>
+    <div class="arr">➜</div>
+    <div class="node k1"><b>8 · Resultado</b>Éxito, aviso o error en el panel de Integraciones</div>
+    <div class="arr">➜</div>
+    <div class="node kb"><b>9 · Backoff</b>Reintento solo si el error es transitorio</div>
+  </div>
+  <div class="note w"><b>Los pasos 3, 4, 5 y 6 no son optimizaciones, son requisitos.</b> Los canales imponen
+  límites de peticiones por segundo, por minuto y por día, y algunos prohíben actualizaciones concurrentes
+  sobre el mismo hotel. Resincronizar un año entero tras cada edición menor agota la cuota y deja el
+  inventario desactualizado justo cuando más importa.</div>
+</div>
+
+<div class="panel">
+  <h3>5.2 · Entrante · llega una reserva desde el canal</h3>
+  <div class="seq">
+    <div class="seqHead" style="grid-template-columns:repeat(4,1fr)">
+      <div>OTA</div><div>Channel manager</div><div>Adaptador</div><div>Dominio PMS</div>
+    </div>
+    <div class="lanes" style="background-size:calc(100%/4) 100%">
+      <div class="msg" style="grid-column:1/3"><i>1</i> Venta cerrada en el canal</div>
+      <div class="msg" style="grid-column:2/4"><i>2</i> Push a tu endpoint, o pull periódico si no hay push</div>
+      <div class="msg wn" style="grid-column:3/4"><i>3</i> Verificar credenciales y firma</div>
+      <div class="msg wn" style="grid-column:3/4"><i>4</i> ¿Existe ya esta referencia externa? Si sí, responder 200 y salir</div>
+      <div class="msg" style="grid-column:3/5"><i>5</i> Traducir códigos remotos a tipo y plan locales</div>
+      <div class="msg ok" style="grid-column:4/5"><i>6</i> Transacción: bloquear inventario, descontar, crear reserva con precios congelados</div>
+      <div class="msg ok" style="grid-column:4/5"><i>7</i> Marcar modelo de pago según el canal</div>
+      <div class="msg ok" style="grid-column:2/4"><i>8</i> Responder HTTP 200 <span class="rt">obligatorio</span></div>
+      <div class="msg dash" style="grid-column:1/5"><i>9</i> Asíncrono: recalcular y republicar disponibilidad al resto de canales</div>
+    </div>
+  </div>
+  <div class="note b"><b>Si el inventario ya está agotado, la reserva se acepta igualmente.</b> El canal ya
+  la vendió y rechazarla no la deshace: se crea, se marca sobreventa y se levanta alerta en el dashboard
+  para que recepción reubique. Devolver un error solo provoca que el canal reintente indefinidamente.</div>
+</div>
+
+<div class="panel">
+  <h3>5.3 · La ventana de doble venta, según el método</h3>
+  <div class="tl">
+    <div class="tlbar">
+      <span style="flex:4;background:var(--f2)">Push / webhook · segundos</span>
+      <span style="flex:14;background:var(--warn)">Pull periódico · minutos</span>
+      <span style="flex:34;background:var(--bad)">iCal · hasta 12 horas</span>
+    </div>
+    <div class="tlx"><span>0</span><span>1 min</span><span>15 min</span><span>12 h</span></div>
+  </div>
+  <p style="font-size:13px;color:var(--tx2);margin-top:8px">La barra representa el tiempo durante el cual
+  tu PMS no sabe que el canal ya vendió. Toda esa franja es riesgo de doble venta. Por eso iCal sirve para
+  un anfitrión con dos apartamentos, pero no para un producto que promete evitar overbooking.</p>
+  <h3>Defensas acumulativas</h3>
+  <div class="chain">
+    <div class="node k1"><b>Fuente única</b>Todo descuento pasa por inventory_day con bloqueo</div>
+    <div class="arr">+</div>
+    <div class="node k1"><b>Reserva de seguridad</b>No publicar la última unidad en todos los canales a la vez</div>
+    <div class="arr">+</div>
+    <div class="node k1"><b>Idempotencia</b>Índice único por referencia externa</div>
+    <div class="arr">+</div>
+    <div class="node k1"><b>Alerta activa</b>Detección y reubicación antes de la llegada</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>5.4 · Particularidades que absorbe la tabla de mapeo</h3>
+  <table>
+    <tr><th style="width:20%">Canal</th><th>Modelo de inventario</th><th>Quién cobra</th><th>Acceso</th></tr>
+    <tr><td><b>Airbnb</b></td>
+        <td>Listing = unidad física. Sin concepto de cama vendible en dormitorio compartido.</td>
+        <td>La plataforma. La reserva entra pagada, no deja saldo pendiente.</td>
+        <td>Cerrado · solo vía partner aprobado o channel manager</td></tr>
+    <tr><td><b>Despegar</b></td>
+        <td>Allotment por habitación y plan tarifario, mensajes OTA en XML.</td>
+        <td>Según acuerdo. Comisión declarada en la propia conexión.</td>
+        <td>Certificación como channel manager, o vía uno existente</td></tr>
+    <tr><td><b>Booking · Expedia</b></td>
+        <td>Tipo de habitación con allotment, soporte completo de restricciones.</td>
+        <td>Normalmente el alojamiento, salvo pago en plataforma.</td>
+        <td>Vía channel manager</td></tr>
+    <tr><td><b>Hostelworld</b></td>
+        <td>Modela camas en dormitorio, el único que encaja de forma nativa con hostels.</td>
+        <td>Depósito en plataforma, resto en el alojamiento.</td>
+        <td>Vía channel manager</td></tr>
+  </table>
+  <div class="note"><b>Todo esto vive en una sola tabla de mapeo</b> con campos como referencia externa,
+  si vende la unidad completa, modelo de pago, modelo de comisión y qué restricciones soporta. Así el
+  dominio no se entera de las diferencias entre canales.</div>
+</div>
+
+<!-- ============ 6 RIESGOS ============ -->
+<h2><span class="n">6</span>Riesgos por fase y mitigación</h2>
+<div class="panel">
+<table>
+  <tr><th style="width:9%">Fase</th><th style="width:30%">Riesgo</th><th>Mitigación</th></tr>
+  <tr><td><b style="color:var(--f1)">1</b></td><td>Modelo de inventario mal planteado</td>
+      <td>Validar con los tres verticales antes de escribir la primera migración. Un hostel, un apartamento y un rural sobre el mismo esquema.</td></tr>
+  <tr><td><b style="color:var(--f1)">1</b></td><td>Condiciones de carrera al vender</td>
+      <td>Bloqueo pesimista y restricción de integridad en base de datos. Probarlo con carga concurrente, no solo a mano.</td></tr>
+  <tr><td><b style="color:var(--f2)">2</b></td><td>Alcance PCI más amplio de lo necesario</td>
+      <td>Checkout alojado o widget del proveedor. Si el dato de tarjeta no pasa por tus servidores, el cumplimiento se simplifica drásticamente.</td></tr>
+  <tr><td><b style="color:var(--f2)">2</b></td><td>Webhooks duplicados o falsificados</td>
+      <td>Verificación de firma obligatoria y deduplicación por identificador de transacción antes de aplicar nada.</td></tr>
+  <tr><td><b style="color:var(--f2)">2</b></td><td>Pagos pendientes que no resuelven</td>
+      <td>Política explícita de cuánto tiempo se retiene inventario con un pago en curso, y liberación automática al expirar.</td></tr>
+  <tr><td><b style="color:var(--f3)">3</b></td><td>Mapeo incorrecto de tipos</td>
+      <td>Asistente de mapeo obligatorio al conectar, con vista previa de lo que se publicará y confirmación explícita del hotel.</td></tr>
+  <tr><td><b style="color:var(--f3)">3</b></td><td>Cuota de peticiones agotada</td>
+      <td>Debounce, coalescing y diff desde el primer día. Monitorizar respuestas de límite excedido como métrica de primer nivel.</td></tr>
+  <tr><td><b style="color:var(--f3)">3</b></td><td>Datos legales incompletos en reservas de OTA</td>
+      <td>Check-in en línea propio enviado tras la confirmación, por el canal de mensajería del huésped.</td></tr>
+  <tr><td><b style="color:var(--f3)">3</b></td><td>Canal en error vendiendo a ciegas</td>
+      <td>Cierre automático de ventas en ese canal cuando la integración lleva un tiempo en fallo, y aviso al responsable.</td></tr>
+</table>
+</div>
+
+<div class="note" style="margin-top:26px">
+  <b>Aviso.</b> Los plazos indicados son orientativos y dependen del tamaño del equipo. Las condiciones de
+  acceso de cada OTA, las tarifas de las pasarelas y las obligaciones legales aplicables cambian con
+  frecuencia: contrástalas con la documentación oficial vigente y con tu asesoría antes de comprometer
+  fechas o arquitectura.
+</div>
+
+</div>
+<script>
+function tt(){const h=document.documentElement;
+  const n=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',n);try{localStorage.setItem('sc-fases',n)}catch(e){}}
+try{const s=localStorage.getItem('sc-fases');if(s)document.documentElement.setAttribute('data-theme',s)}catch(e){}
+</script>
+</body>
+</html>
