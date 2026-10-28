@@ -19,7 +19,16 @@ jobs:
   supabase:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:        # base temporal solo para generar la semilla rápido
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: pruebas
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      PMS_SEED_LOCAL_URL: postgresql://postgres:pruebas@localhost:5432/postgres
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
