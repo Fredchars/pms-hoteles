@@ -22,6 +22,27 @@ for _k in ("DATABASE_URL", "PMS_SESION_SECRETO", "PMS_MODO_DEMO", "PMS_ENTORNO")
     except Exception:  # sin secrets.toml
         pass
 
+
+
+def _modulos_al_dia():
+    """Streamlit Cloud actualiza el código con `git pull` SIN reiniciar el proceso y no recarga la carpeta `pms/` (está fuera de `app/`):
+    los módulos viejos quedarían en memoria (p. ej. `pms.seguridad` sin una función nueva → AttributeError). Si algún archivo de `pms/`
+    cambió desde que se cargaron, se descartan para que se importen de nuevo."""
+    marca = max((f.stat().st_mtime_ns for f in (RAIZ / "pms").glob("*.py")), default=0)
+    if getattr(sys, "_pms_marca", None) == marca:
+        return
+    viejos = [k for k in sys.modules if k in ("pms", "ui") or k.startswith("pms.")]
+    if viejos:
+        try:
+            sys.modules["pms.db"].cerrar_pool()
+        except Exception:
+            pass
+        for k in viejos:
+            del sys.modules[k]
+    sys._pms_marca = marca
+
+
+_modulos_al_dia()
 import ui  # noqa: E402
 from pms import config, db, seguridad  # noqa: E402
 from pms.errores import ErrorNegocio  # noqa: E402
@@ -48,7 +69,7 @@ if "pms_actor" in st.session_state:
     try:
         _vigente = seguridad.refrescar_actor(st.session_state["pms_actor"])
     except Exception as _e:
-        st.error(f"No se pudo conectar con la base de datos ({type(_e).__name__}). Revisa el secreto DATABASE_URL.")
+        ui.mostrar_error(_e, "al validar la sesión abierta")
         st.stop()
     if _vigente is None:
         _cerrar_sesion()
@@ -63,7 +84,7 @@ try:
         if _a:
             st.session_state["pms_actor"] = _a
 except Exception as _e:
-    st.error(f"No se pudo conectar con la base de datos ({type(_e).__name__}). Revisa el secreto DATABASE_URL.")
+    ui.mostrar_error(_e, "al recuperar la sesión del token")
     st.stop()
 
 # --- pantalla de ingreso ---
@@ -85,7 +106,7 @@ if "pms_actor" not in st.session_state:
             except ErrorNegocio as e:
                 st.error(str(e))
             except Exception as e:
-                st.error(f"No se pudo conectar con la base de datos ({type(e).__name__}).")
+                ui.mostrar_error(e, "al iniciar sesión")
         st.caption("Si olvidaste tu contraseña, pide a un administrador que la cambie.")
     with c2:
         if seguridad.demo_permitido():
@@ -121,7 +142,7 @@ if A.get("debe_cambiar_clave"):
         except ErrorNegocio as e:
             st.error(str(e))
         except Exception as e:
-            st.error(f"No se pudo guardar la contraseña ({type(e).__name__}). Intenta de nuevo.")
+            ui.mostrar_error(e, "al crear la contraseña propia")
         else:
             st.session_state.pop("pms_cn_1", None)
             st.session_state.pop("pms_cn_2", None)
@@ -134,7 +155,7 @@ if A.get("debe_cambiar_clave"):
 try:
     hoteles = config.hoteles_visibles(A)
 except Exception as e:
-    st.error(f"No se pudo leer la base de datos ({type(e).__name__}).")
+    ui.mostrar_error(e, "al leer los hoteles")
     st.stop()
 if not hoteles:
     st.warning("No hay hoteles disponibles para este usuario.")

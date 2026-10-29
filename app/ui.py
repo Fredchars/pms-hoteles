@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import base64
 import datetime as dt
+import sys
+import traceback
 from functools import lru_cache
 from pathlib import Path
 
 import streamlit as st
 
-from pms import seguridad
+from pms import db, seguridad
 from pms.errores import ErrorNegocio
 from pms.util import fmt_moneda
 
@@ -109,6 +111,18 @@ def mostrar_flash():
         (st.success if tipo == "ok" else st.warning)(msg)
 
 
+def mostrar_error(e: BaseException, accion: str = "") -> None:
+    """Error de conexión → mensaje de conexión (sin detalles). Cualquier otro → «Error inesperado (Tipo)» y el traceback completo va a los
+    registros (stderr). Nunca se muestra la cadena de conexión."""
+    if db.es_error_de_conexion(e):
+        # el texto de un error de conexión puede incluir el servidor: solo se registra el tipo
+        print(f"[PMS] Error de conexión con la base de datos ({type(e).__name__}) {accion}", file=sys.stderr, flush=True)
+        st.error(f"No se pudo conectar con la base de datos ({type(e).__name__}). Revisa el secreto DATABASE_URL y que Supabase esté activo.")
+        return
+    print(f"[PMS] Error inesperado {accion}:\n" + "".join(traceback.format_exception(type(e), e, e.__traceback__)), file=sys.stderr, flush=True)
+    st.error(f"Error inesperado ({type(e).__name__}). Ya quedó registrado; si continúa, avisa a soporte.")
+
+
 def correr(fn, *args, ok: str = "Listo.", recargar: bool = True, **kw):
     """Ejecuta una operación de negocio; muestra el error en español si falla. Devuelve el resultado o None."""
     try:
@@ -117,7 +131,7 @@ def correr(fn, *args, ok: str = "Listo.", recargar: bool = True, **kw):
         st.error(str(e))
         return None
     except Exception as e:  # pragma: no cover
-        st.error(f"Ocurrió un problema inesperado ({type(e).__name__}). Intenta de nuevo; si continúa, avisa a soporte.")
+        mostrar_error(e, f"en {getattr(fn, '__name__', 'operación')}")
         return None
     flash(ok)
     if recargar:

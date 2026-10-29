@@ -121,7 +121,7 @@ with t_u:
                     except ErrorNegocio as e:
                         st.error(str(e))
                     except Exception as e:
-                        st.error(f"No se pudo generar la contraseña ({type(e).__name__}).")
+                        ui.mostrar_error(e, "al generar contraseña temporal")
                     else:
                         st.warning(f"Contraseña temporal de {u['email']}: cópiala ahora, no se volverá a mostrar.")
                         st.code(temporal, language=None)

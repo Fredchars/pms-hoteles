@@ -9,7 +9,7 @@ from contextlib import contextmanager
 import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb  # noqa: F401  (se reexporta)
-from psycopg_pool import ConnectionPool
+from psycopg_pool import ConnectionPool, PoolTimeout
 
 _pool: ConnectionPool | None = None
 _url_pool: str | None = None
@@ -27,6 +27,11 @@ def url() -> str:
     if not u:
         raise RuntimeError("Falta DATABASE_URL (variable de entorno o secreto de Streamlit).")
     return u
+
+
+def es_error_de_conexion(e: BaseException) -> bool:
+    """True solo si el fallo es realmente de conexión con la base (o falta DATABASE_URL); cualquier otro es un error de programa."""
+    return isinstance(e, (psycopg.OperationalError, PoolTimeout)) or (isinstance(e, RuntimeError) and "DATABASE_URL" in str(e))
 
 
 def pool() -> ConnectionPool:

@@ -16,6 +16,10 @@ for v in ("PMS_MODO_DEMO", "PMS_ENTORNO", "PMS_SESION_SECRETO"):
 
 import pytest  # noqa: E402
 
+# Las pruebas de interfaz ejecutan app/Inicio.py en este mismo proceso: se marca el código de pms/ como «ya cargado» para que la
+# recarga de módulos de Streamlit Cloud (Inicio._modulos_al_dia) no descarte los módulos que usan las demás pruebas.
+sys._pms_marca = max(f.stat().st_mtime_ns for f in (RAIZ / "pms").glob("*.py"))
+
 from pms import config, db, huespedes, semilla  # noqa: E402
 from pms.seguridad import actor_de, hash_clave  # noqa: E402
 from pms.util import hoy_hotel  # noqa: E402
