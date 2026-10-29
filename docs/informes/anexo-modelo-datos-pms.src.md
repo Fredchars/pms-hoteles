@@ -1,35 +1,54 @@
 # PMS Hotelero · Piloto — Anexo A · Modelo de datos
 
-*Prototipo diseñado para ATm Consulting · versión 1.0 · 29 de octubre de 2026 · fuente: `db/01_esquema_pms.sql` y `db/02_rls_pms.sql`*
+*Prototipo diseñado para ATm Consulting · versión 1.1 · 29 de octubre de 2026 · fuente: `db/01_esquema_pms.sql` y `db/02_rls_pms.sql`*
 
-## 1. Vista general del modelo
-21 tablas con prefijo `pms_` en el esquema `public` de Supabase (proyecto *atlas-selleragent*), agrupadas en 7 dominios. Casi todas llevan `hotel_id`, que separa los datos de cada hotel.
+## 1. Vista general por dominio
+21 tablas con prefijo `pms_` en el esquema `public` de Supabase (proyecto *atlas-selleragent*), agrupadas en 7 dominios con un color cada uno. Las flechas van del dominio referenciado al que lo usa y llevan los nombres de las columnas FK. `pms_auditoria` no tiene FK: recibe una fila por cada acción importante.
 
-![Dominios](img/dominios.png)
+![Vista general por dominio](img-er/01-vista-general-dominios.png)
 
-## 2. Diagrama ER simplificado (llaves)
-Solo llaves primarias (PK) y foráneas (FK). Por legibilidad no se dibujan las flechas hacia `pms_hoteles` (todas las tablas con `hotel_id`) ni hacia `pms_usuarios` (columnas de quién creó/aprobó); sí figuran en la tabla de relaciones.
+## 2. Diagrama ER completo
+Todas las tablas y columnas, agrupadas por dominio. Notación pata de gallo: **pata** = muchos, **barra** = uno, **círculo** = opcional; `?` = la columna admite nulos. Las líneas punteadas finas son `hotel_id` y las columnas de usuario (quién creó/aprobó), para no tapar las relaciones de negocio.
 
-![ER simplificado](img/er-simplificado.png)
+![ER completo](img-er/02-er-completo.png)
 
-## 3. Diagrama ER completo
-![ER completo](img/er-completo.png)
+## 3. Diagramas por dominio
+Cada diagrama muestra solo las columnas PK/FK/UK (el resto está en §4), las relaciones internas con su cardinalidad y un recuadro con las FK hacia o desde otros dominios.
 
-### 3.1 Núcleo de reservas (mermaid)
-```mermaid
-erDiagram
-  pms_hoteles ||--o{ pms_habitaciones : tiene
-  pms_tipos_habitacion ||--o{ pms_habitaciones : clasifica
-  pms_habitaciones ||--o{ pms_camas : contiene
-  pms_huespedes ||--o{ pms_reservas : hace
-  pms_reservas ||--o{ pms_reserva_noches : ocupa
-  pms_habitaciones ||--o{ pms_reserva_noches : "una noche activa por habitación"
-  pms_reservas ||--o| pms_estancias : "check-in/out"
-  pms_reservas ||--o{ pms_cargos : cuenta
-  pms_reservas ||--o{ pms_pagos : paga
-  pms_reservas ||--o| pms_reservas_web : "origen web"
-  pms_reservas_web ||--o{ pms_pagos_pasarela : intenta
-```
+### 3.1 Organización y acceso
+Tablas: `pms_hoteles`, `pms_usuarios`, `pms_impuestos`.
+
+![Organización y acceso](img-er/03-dominio-1-organizacion-y-acceso.png)
+
+### 3.2 Catálogos y tarifas
+Tablas: `pms_tipos_habitacion`, `pms_tarifas`.
+
+![Catálogos y tarifas](img-er/03-dominio-2-catalogos-y-tarifas.png)
+
+### 3.3 Inventario y plano
+Tablas: `pms_habitaciones`, `pms_camas`, `pms_bloqueos`, `pms_housekeeping`.
+
+![Inventario y plano](img-er/03-dominio-3-inventario-y-plano.png)
+
+### 3.4 Reservas (núcleo)
+Tablas: `pms_huespedes`, `pms_consentimientos`, `pms_reservas`, `pms_reserva_noches`, `pms_estancias`.
+
+![Reservas (núcleo)](img-er/03-dominio-4-reservas-nucleo.png)
+
+### 3.5 Facturación y pagos
+Tablas: `pms_cargos`, `pms_pagos`.
+
+![Facturación y pagos](img-er/03-dominio-5-facturacion-y-pagos.png)
+
+### 3.6 Reserva web
+Tablas: `pms_reservas_web`, `pms_pagos_pasarela`, `pms_eventos_pasarela`, `pms_correos`.
+
+![Reserva web](img-er/03-dominio-6-reserva-web.png)
+
+### 3.7 Auditoría
+Tablas: `pms_auditoria`.
+
+![Auditoría](img-er/03-dominio-7-auditoria.png)
 
 ## 4. Diccionario de datos
 {{DICCIONARIO}}
@@ -38,6 +57,9 @@ erDiagram
 {{RELACIONES}}
 
 ## 6. Cómo fluye una reserva por las tablas
+
+![Ciclo de vida de una reserva](img-er/04-ciclo-vida-reserva.png)
+
 1. **Huésped:** `pms_huespedes` + `pms_consentimientos` (finalidad, versión del texto, fecha).
 2. **Reserva:** `pms_reservas` (estado, canal, personas, fechas; `opcion_vence_en` si es opción) y una fila de `pms_reserva_noches` por noche con habitación y **precio congelado**.
 3. **Cuenta:** `pms_cargos` (noches, extras, descuentos con aprobación e impuestos congelados en jsonb) y `pms_pagos`.

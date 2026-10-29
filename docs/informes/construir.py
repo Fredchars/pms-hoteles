@@ -21,7 +21,7 @@ header,footer{color:#666;font-size:.85em}header{border-bottom:1px solid #ddd;mar
 for n in ["especificaciones-tecnicas-pms","manual-uso-pms","continuidad-respaldo-pms","anexo-modelo-datos-pms"]:
     md=open(n+".md").read()
     body=markdown.markdown(md,extensions=["tables","fenced_code","toc"])
-    body=re.sub(r'src="(img/[^"]+)"',lambda m:'src="data:image/png;base64,'+base64.b64encode(open(m.group(1),"rb").read()).decode()+'"',body)
+    body=re.sub(r'src="(img[^"/]*/[^"]+)"',lambda m:'src="data:image/png;base64,'+base64.b64encode(open(m.group(1),"rb").read()).decode()+'"',body)
     title=re.search(r"^# (.+)$",md,re.M).group(1)
     h=f'<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title><style>{css}</style></head><body><header>Prototipo diseñado para ATm Consulting · PMS Hotelero Piloto</header>{body}<footer>Prototipo diseñado para ATm Consulting · datos ficticios</footer></body></html>'
     open(n+".html","w").write(h)
