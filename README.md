@@ -67,6 +67,8 @@ Solo tablas con prefijo `pms_` en el proyecto compartido (21; la reserva web añ
 El workflow **Respaldo semanal** (domingos) vuelca las tablas `pms_*`, las cifra con AES-256 (secreto `BACKUP_PASSPHRASE`) y guarda el archivo 30 días como artefacto. Instrucciones de restauración dentro del archivo `LEEME.txt` del respaldo.
 
 ## Despliegue
+**Suite v2 (segunda app, estética pastel):** mismo repositorio y misma base. En Streamlit Community Cloud: Main file `pms_v2/Inicio.py`, Python 3.13, y los mismos secretos que la app original (`DATABASE_URL`, `PMS_SESION_SECRETO`, `PMS_MODO_DEMO`, `PMS_ENTORNO`). La app original sigue en `app/Inicio.py`.
+
 Ver `docs/despliegue-streamlit-cloud.md` (paso manual en Streamlit Community Cloud).
 
 ## Documentos
