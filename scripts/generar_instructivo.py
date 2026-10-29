@@ -15,10 +15,11 @@ D["descuento"] = diagrama("flujo_descuento", ["Recepción pide\ndescuento (%)", 
 D["primer"] = diagrama("flujo_primer_ingreso", ["Ingresas con tu\ncorreo y la clave\ntemporal", "Aparece solo\n«Crea tu contraseña\nnueva»", "Escribes la nueva\ny la confirmas", "Guardas y\nentras al\nsistema"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
 D["temporal"] = diagrama("flujo_clave_temporal", ["Administrador\npulsa «Generar\ncontraseña temporal»", "Se muestra\nUNA sola vez", "La entregas\npor un canal\nprivado", "La persona crea\nsu contraseña\nal ingresar"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
 D["plano"] = diagrama("flujo_plano", ["Elegir hotel,\nfechas y\nhuéspedes", "Ver la planta\ncon colores\npor estado", "Clic en una\nhabitación\ndisponible", "Revisar camas\ny desglose\ndel precio", "Continuar con\nla reserva", "Reservas ya\ntrae los datos"], colores={2: NA, 5: VE}, cols=3, alto=1.3, ancho=9)
+D["web"] = diagrama("flujo_reserva_web", ["Hotel, fechas\ny huéspedes", "Elegir tipo o\nhabitación\nen el plano", "Bloqueo de\n15 minutos\n(con reloj)", "Datos y\nconsentimiento\n(Ley 1581)", "Pago\n(simulado)", "Confirmación\ncon número\nPMS-AAAA-XXXXXX"], colores={2: NA, 4: NA, 5: VE}, cols=3, alto=1.3, ancho=9)
 D["admin"] = diagrama("flujo_admin", ["Crear hotel\n(país y moneda)", "Impuestos\n(nombre y %)", "Tipos de\nhabitación", "Habitaciones\ny camas", "Usuarios\ny roles"], cols=5, alto=1.3, ancho=11)
 
 d = nuevo_documento("Instructivo por rol", "PMS hotelero (piloto) · recepción, gerencia, housekeeping y administrador")
-parrafo(d, "Versión 1.2 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.3 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todos los datos del piloto son ficticios (hoteles, huéspedes, reservas, pagos). Los correos de confirmación, los pagos y las conexiones "
         "con otras plataformas están simulados: la pantalla siempre lo avisa. El comprobante PDF NO es una factura legal.", "Importante")
 salto(d)
@@ -200,6 +201,52 @@ nota(d, "Los cambios de impuestos solo afectan a las líneas nuevas: las ya cobr
 imagen(d, CAPT / "admin_configuracion.png", 15.5, "Configuración (datos ficticios)")
 salto(d)
 
+# ---------- RESERVA WEB ----------
+d.add_heading(lim("5. Reserva web (mini web para clientes)"), 1)
+parrafo(d, "Es una página PÚBLICA y separada del PMS donde el cliente elige habitación, la bloquea unos minutos, deja sus datos, paga y recibe un número de reserva. "
+           "La reserva aparece sola en el PMS con canal «web». En este prototipo el pago y el correo son SIMULADOS: no se cobra ni se envía nada.")
+nota(d, "La dirección de la mini web es https://pms-reservas-atm.streamlit.app/ . La pantalla siempre dice «Prototipo con datos ficticios» y «MODO PRUEBAS: no se cobra dinero». "
+        "Usa solo datos inventados (por ejemplo, correo nombre@prueba-web.invalid).", "Importante")
+imagen(d, D["web"], 15)
+d.add_heading(lim("5.1 Lo que hace el cliente"), 2)
+lista(d, ["Elige hotel, fechas, adultos y niños y pulsa «Ver habitaciones disponibles». Ve los tipos de habitación con su precio total e impuestos, y el plano por plantas (solo número, tipo, vista y si está libre).",
+          "Pulsa «Reservar este tipo» (el sistema asigna una habitación libre) o «Elegir» en una habitación del plano.",
+          "Responde la pregunta de suma (verificación anti-robots) y pulsa «Bloquear mi habitación». Aparece un reloj de 15 minutos: mientras corre, nadie más puede reservar esa habitación.",
+          "Escribe nombres, apellidos y correo (teléfono y documento son opcionales), lee el aviso de privacidad (Ley 1581 de 2012) y marca la casilla de autorización (obligatoria). Sin ella no se puede continuar. Pulsa «Continuar al pago».",
+          "Revisa el resumen y pulsa «Pagar». Se abre la pantalla de la pasarela SIMULADA («MODO PRUEBAS: no se cobra dinero»): pulsa «Simular pago aprobado» (o «rechazado» para probar el reintento). No se pide ninguna tarjeta.",
+          "Ve la confirmación con el número de reserva (PMS-AAAA-XXXXXX), el enlace para ver su reserva y el aviso «Correo simulado: no se envió», con una vista del correo que recibiría."], numerada=True)
+imagen(d, CAPT / "web_02_plano.png", 12, "Mini web: tipos de habitación y plano (datos ficticios)")
+imagen(d, CAPT / "web_04_datos_con_temporizador.png", 12, "Bloqueo con reloj y datos del huésped con consentimiento")
+imagen(d, CAPT / "web_07_pasarela_simulada.png", 12, "Pasarela simulada: MODO PRUEBAS, no se cobra dinero")
+imagen(d, CAPT / "web_08_confirmacion.png", 12, "Confirmación con número de reserva y correo simulado")
+d.add_heading(lim("5.2 Qué pasa si el cliente no paga a tiempo"), 2)
+lista(d, ["Si el reloj llega a cero sin pago, la habitación se libera sola: la reserva pasa a «Cancelada» con el motivo «Opción vencida: se liberó automáticamente» y el bloqueo web queda «El bloqueo venció».",
+          "Lo mismo ocurre con las «opciones» que crea recepción: ahora vencen a las 48 horas (antes no vencían nunca). Las opciones antiguas, que no tienen fecha de vencimiento, no se tocan.",
+          "La liberación se hace de dos maneras: al consultar disponibilidad (siempre al día) y con una tarea programada cada 5 minutos en GitHub Actions. GitHub puede retrasar esa tarea unos minutos; por eso la primera es la que garantiza que no haya doble venta.",
+          "Si el cliente paga justo después de vencer, el sistema intenta recuperar las mismas habitaciones; si ya no están libres, deja el pago en «Requiere revisión» y el personal lo gestiona (devolución o cambio)."])
+d.add_heading(lim("5.3 Lo que ve el personal en el PMS"), 2)
+lista(d, ["Menú «🌐 Reservas web» (recepción y gerencia): una fila por reserva web con estado, reserva del PMS, huésped, habitación, total, pagado, estado del pago, referencia, hora de vencimiento y estado del correo. El botón «Liberar vencidas ahora» fuerza la liberación.",
+          "En «Reservas» las reservas web aparecen con canal «web» y la columna «Vence» muestra cuándo vence cada opción. También se ven en Calendario y Plano.",
+          "Mientras el cliente completa sus datos, el huésped figura como «Cliente web (datos pendientes)». Al enviar sus datos se crea el huésped real con su consentimiento registrado.",
+          "El pago aprobado queda registrado en la cuenta de la reserva (método «pasarela») y en Facturación."])
+imagen(d, CAPT / "pms_reservas_web.png", 15.5, "PMS → «Reservas web» (datos ficticios)")
+imagen(d, CAPT / "pms_reservas_canal_web.png", 15.5, "PMS → «Reservas» con canal web y columna «Vence»")
+d.add_heading(lim("5.4 Cómo ponerla en la página web del hotel"), 2)
+lista(d, ["Opción rápida (enlace): un botón «Reservar» que apunte a https://pms-reservas-atm.streamlit.app/?hotel=ID (ID = número del hotel en el PMS).",
+          "Opción incrustada (iframe): pegar en la página del hotel <iframe src=\"https://pms-reservas-atm.streamlit.app/?embed=true&hotel=ID\" width=\"100%\" height=\"900\" style=\"border:0\" title=\"Reservas\"></iframe>. Con embed=true se ocultan la barra y el pie de Streamlit.",
+          "En celular conviene usar una altura de 1100 px o abrir el enlace en pestaña nueva.",
+          "La página del hotel debe usar https. Si el hotel usa un constructor web (Wix, WordPress…), usa el bloque «Incrustar HTML».",
+          "Si la mini web estuvo unas horas sin visitas, Streamlit la «duerme» y la primera carga tarda unos segundos."])
+d.add_heading(lim("5.5 Qué es real y qué es simulado en este prototipo"), 2)
+tabla(d, ["Parte", "Estado"], [
+    ["Disponibilidad, bloqueo de 15 min, no doble venta, vencimiento", "REAL (misma base y mismas reglas que el PMS)"],
+    ["Reserva en el PMS con canal web, huésped y consentimiento", "REAL (con datos ficticios)"],
+    ["Pasarela de pagos", "SIMULADA: no se cobra. Está preparada para cambiar a Wompi sin tocar el resto"],
+    ["Correo de confirmación", "SIMULADO: se guarda la plantilla y se muestra en pantalla; no se envía a nadie"],
+    ["Verificación anti-robots y límites por dirección", "Sencillos (suma + máximo de bloqueos por hora); no es un captcha comercial"],
+    ["Recibir avisos reales de la pasarela (webhook)", "Pendiente de la fase 2: requiere un receptor externo (Streamlit no recibe webhooks)"]], anchos=[8, 8.5])
+salto(d)
+
 d.add_heading(lim("Preguntas frecuentes"), 1)
 tabla(d, ["Pregunta", "Respuesta"], [
     ["No me deja guardar la reserva.", "Lee el mensaje rojo: puede que no haya habitación libre, que las fechas estén mal o que falte el consentimiento del huésped."],
@@ -209,7 +256,10 @@ tabla(d, ["Pregunta", "Respuesta"], [
     ["Me bloquearon el acceso.", "Fueron 5 intentos fallidos. Espera 15 minutos o pídele al administrador que revise tu usuario."],
     ["En el plano no puedo elegir una habitación.", "Solo se pueden elegir las verdes (disponibles). Revisa la leyenda: puede estar ocupada, en opción, bloqueada, fuera de servicio o no caber las personas que indicaste."],
     ["Elegí una habitación y desapareció la selección.", "Cambiaron las fechas, las personas o el estado de esa habitación (por ejemplo, otra persona la reservó). Elige de nuevo."],
-    ["¿El correo de confirmación sale de verdad?", "No. Es una simulación y la pantalla lo avisa."],
+    ["¿El correo de confirmación sale de verdad?", "No. Es una simulación y la pantalla lo avisa (también en la mini web)."],
+    ["¿La mini web cobra de verdad?", "No. La pasarela es simulada y dice «MODO PRUEBAS: no se cobra dinero». No se piden tarjetas."],
+    ["Un cliente bloqueó una habitación y no pagó. ¿Qué pasa?", "A los 15 minutos se libera sola. En «Reservas web» puedes pulsar «Liberar vencidas ahora»."],
+    ["Una opción mía no vence.", "Solo vencen (a las 48 h) las opciones creadas desde esta versión. Las anteriores no tienen fecha de vencimiento: cancélalas o confírmalas a mano."],
     ["¿Puedo usar el comprobante como factura?", "No. Es solo un comprobante de cuenta del piloto."],
     ["¿Los datos son reales?", "No. Todo es ficticio. No cargues datos reales de personas en el piloto."]], anchos=[6, 10.5])
 ruta, pdf = guardar_y_pdf(d, "instructivo-pms-por-rol")

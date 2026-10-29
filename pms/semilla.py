@@ -17,8 +17,8 @@ from .errores import ErrorNegocio
 from .seguridad import actor_de, hash_clave
 from .util import hoy_hotel
 
-TABLAS = ["pms_auditoria", "pms_pagos", "pms_cargos", "pms_housekeeping", "pms_bloqueos", "pms_estancias", "pms_reserva_noches",
-          "pms_reservas", "pms_consentimientos", "pms_huespedes", "pms_tarifas", "pms_camas", "pms_habitaciones",
+TABLAS = ["pms_auditoria", "pms_correos", "pms_eventos_pasarela", "pms_pagos_pasarela", "pms_pagos", "pms_cargos", "pms_housekeeping", "pms_bloqueos", "pms_estancias", "pms_reserva_noches",
+          "pms_reservas_web", "pms_reservas", "pms_consentimientos", "pms_huespedes", "pms_tarifas", "pms_camas", "pms_habitaciones",
           "pms_tipos_habitacion", "pms_usuarios", "pms_impuestos", "pms_hoteles"]
 
 # Layout de prueba PROVISIONAL (plano de la maqueta V1.1): 3 plantas × 6 habitaciones.

@@ -1,4 +1,4 @@
-"""Verifica las tablas pms_* en Supabase: existen (17), RLS activo sin políticas, anon/authenticated sin privilegios,
+"""Verifica las tablas pms_* en Supabase: existen (21), RLS activo sin políticas, anon/authenticated sin privilegios,
 la API REST pública (clave anon) no devuelve filas, contraseñas solo con hash, y que las demás tablas del proyecto
 (ATLAS, simulador, etc.) siguen intactas. Sale con código 1 si algo falla. No imprime secretos."""
 import json
@@ -29,7 +29,7 @@ def main():
     if not url:
         sys.exit("Falta DATABASE_URL")
     with psycopg.connect(url, row_factory=dict_row, prepare_threshold=None) as cx:
-        ok(len(TABLAS) == 17, f"el esquema define {len(TABLAS)} tablas pms_")
+        ok(len(TABLAS) == 21, f"el esquema define {len(TABLAS)} tablas pms_")
         filas = {r["relname"]: r for r in cx.execute(
             "select c.relname, c.relrowsecurity, (select count(*) from pg_policies p where p.tablename = c.relname) as politicas "
             "from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' "

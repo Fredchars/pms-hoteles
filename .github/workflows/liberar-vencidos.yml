@@ -1,0 +1,29 @@
+name: Liberar opciones y bloqueos web vencidos (PMS)
+# Tarea programada gratuita. LIMITACIONES: GitHub puede retrasar las ejecuciones programadas (mínimo ~5 min, a veces 10-20) y las
+# desactiva si el repositorio pasa 60 días sin actividad. Por eso la liberación también ocurre «perezosamente» dentro de la app.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: liberar-vencidos
+  cancel-in-progress: false
+jobs:
+  liberar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Comprobar secreto
+        run: test -n "$DATABASE_URL" || (echo "Falta el secreto DATABASE_URL" && exit 1)
+      - name: Liberar vencidos
+        run: python scripts/liberar_vencidos.py

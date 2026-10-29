@@ -41,6 +41,7 @@ with t_lista:
     st.dataframe([{"Código": r["codigo"], "Huésped": r["huesped"], "Tipo": r["tipo"], "Habitación": r["habitaciones"] or "—",
                    "Entrada": ui.f_fecha(r["fecha_entrada"]), "Salida": ui.f_fecha(r["fecha_salida"]),
                    "Estado": reservas.ESTADOS_NOMBRE[r["estado"]], "Canal": r["canal"],
+                   "Vence": (r["opcion_vence_en"].astimezone().strftime("%d/%m %H:%M") if r["estado"] == "opcion" and r.get("opcion_vence_en") else ""),
                    "Cancelación": "Pendiente" if r["cancelacion_estado"] == "solicitada" else ""} for r in filas],
                  hide_index=True, width="stretch")
 

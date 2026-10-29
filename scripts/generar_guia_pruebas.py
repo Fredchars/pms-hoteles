@@ -165,13 +165,45 @@ E = [
  ("E49", "Plano de habitaciones", "Vista al mar configurable y sin acceso antes de crear la contraseña", f"{U['adm']} y {U['rec2']}",
   ["Con el administrador: Configuración → Habitaciones y camas: crea una habitación con la casilla «Vista al mar» marcada y revisa la columna «Al mar» de la tabla.", "Abre el plano con «Solo vista al mar».",
    "Con un usuario que aún tenga contraseña temporal (E36), ingresa e intenta abrir la dirección terminada en /plano."],
-  "La habitación nueva aparece con 🌊 y en el filtro de vista al mar. Antes de crear la contraseña nueva solo se ve «Crea tu contraseña nueva»: el plano no abre."),
+  "La habitación nueva aparece con 🌊 y en el filtro de vista al mar. Antes de crear la contraseña nueva solo se ve «Crea tu contraseña nueva»: el plano no abre."), ("E50", "Reserva web", "Reserva completa de un cliente (camino feliz)", "Sin usuario (mini web pública) + " + U["rec"],
+  ["Abre https://pms-reservas-atm.streamlit.app/, elige hotel, fechas (dentro de unos días) y 2 adultos y pulsa «Ver habitaciones disponibles».",
+   "Elige una habitación del plano («Elegir»), responde la suma y pulsa «Bloquear mi habitación».", "Escribe datos inventados (correo nombre@prueba-web.invalid), lee el aviso de privacidad, marca la autorización y pulsa «Continuar al pago».",
+   "Pulsa «Pagar» y luego «Simular pago aprobado». Con recepción abre «Reservas web» y «Reservas»."],
+  "Ves la pantalla «MODO PRUEBAS: no se cobra dinero» y al final «¡Reserva confirmada!» con un número PMS-AAAA-XXXXXX y el aviso «Correo simulado: no se envió». En el PMS la reserva aparece con canal «web», confirmada, con el pago registrado."),
+ ("E51", "Reserva web", "Bloqueo con reloj que vence solo", "Mini web + " + U["rec"],
+  ["Bloquea una habitación y NO continúes. Mira el reloj de 15 minutos.", "Con recepción abre «Reservas web»: la fila aparece como «Habitación bloqueada».", "Intenta reservar esa misma habitación para las mismas fechas desde recepción.",
+   "Pasados 15 minutos (o con «Liberar vencidas ahora» cuando venza) vuelve a mirar."],
+  "Mientras corre el reloj nadie más puede reservarla (recepción recibe «no hay habitación libre»). Al vencer, la reserva pasa a «El bloqueo venció», queda Cancelada con el motivo «Opción vencida: se liberó automáticamente» y la habitación vuelve a estar libre. Si el cliente abre su enlace ve que el bloqueo venció."),
+ ("E52", "Reserva web", "Consentimiento obligatorio (Ley 1581) y datos inválidos", "Mini web",
+  ["En la pantalla de datos, deja la autorización SIN marcar y pulsa «Continuar al pago».", "Escribe un correo mal escrito (sin @) con la autorización marcada.", "Marca la autorización opcional de ofertas solo en una de dos pruebas."],
+  "Sin la autorización obligatoria no avanza y muestra un aviso (Ley 1581). Un correo inválido se rechaza con un mensaje claro. La autorización de ofertas es opcional y no impide continuar."),
+ ("E53", "Reserva web", "Pago rechazado y reintento", "Mini web",
+  ["Llega a la pasarela simulada y pulsa «Simular pago rechazado».", "Mira el mensaje y pulsa «Pagar» de nuevo; esta vez «Simular pago aprobado»."],
+  "Tras el rechazo se avisa «pago rechazado», la habitación sigue bloqueada mientras corra el reloj y se puede reintentar. Al aprobar, queda confirmada con un solo pago registrado."),
+ ("E54", "Reserva web", "Dos clientes por la última habitación", "Dos ventanas del navegador (mini web)",
+  ["Busca unas fechas donde quede UNA sola habitación de un tipo (puedes bloquear las demás con la Nueva reserva de recepción).", "En dos ventanas, elige a la vez esa habitación y pulsa «Bloquear mi habitación» en ambas."],
+  "Solo una ventana logra el bloqueo; la otra recibe el mensaje de que ya no está disponible y puede elegir otra. Nunca se venden dos veces la misma habitación y noche."),
+ ("E55", "Reserva web", "Enlace de la reserva y privacidad", "Mini web",
+  ["Copia el enlace de la confirmación y ábrelo en otra ventana privada.", "Cambia una letra del código «k=» del enlace y ábrelo.", "Mira lo que muestra la mini web."],
+  "El enlace correcto muestra solo esa reserva (con el correo enmascarado, p. ej. ca***@prueba-web.invalid). Con el código cambiado dice «No encontramos esa reserva» y no revela nada. La mini web nunca muestra nombres de otros huéspedes, motivos internos ni precios de tarifas internas."),
+ ("E56", "Reserva web", "Reservas web en el PMS (recepción y gerencia)", f"{U['rec']} y {U['ger1']}",
+  ["Abre «🌐 Reservas web» y revisa las columnas Estado web, Pago, Referencia, Vence y Correo.", "Abre «Reservas» y busca las de canal «web»; mira la columna «Vence».", "Mira el Calendario y el Plano en las fechas de la reserva.", "Con housekeeping revisa el menú."],
+  "Cada reserva web se ve con su estado, pago y correo (Simulado, no se envió). En Reservas, Calendario y Plano aparece con canal web. Housekeeping no ve «Reservas web»."),
+ ("E57", "Reserva web", "Opciones de recepción que vencen (48 h)", U["rec"],
+  ["Crea una reserva en estado «Opción» y mira la columna «Vence» en la lista de Reservas (debe marcar unas 48 horas desde ahora).", "Confírmala y vuelve a mirar.", "Pide al equipo técnico que simule el vencimiento en una opción de prueba (o espera a que venza) y revisa Reservas y Plano."],
+  "Una opción nueva muestra su hora de vencimiento; al confirmarla, el vencimiento desaparece. Una opción vencida queda Cancelada («Opción vencida: se liberó automáticamente») y la habitación vuelve a verse libre en el Plano. Las opciones antiguas sin fecha no cambian."),
+ ("E58", "Reserva web", "Incrustar la mini web en la página del hotel", "Persona de ATm / webmaster",
+  ["Crea una página de prueba con el iframe del instructivo (sección 5.4) o abre el enlace con ?embed=true&hotel=ID.", "Prueba en computador y celular."],
+  "La mini web se ve sin barra ni pie de Streamlit, con fondo blanco y el pie «Prototipo diseñado para ATm Consulting». Todo el flujo funciona dentro de la página."),
+ ("E59", "Reserva web", "La mini web no rompe el PMS", "Todos los usuarios",
+  ["Después de hacer reservas web, ingresa al PMS con recepción, gerencia, housekeeping y administrador.", "Recarga la página (F5) y comprueba que la sesión sigue.", "Comprueba que no se pide la contraseña de nuevo ni se pierde ninguna reserva."],
+  "El PMS funciona igual que antes: misma sesión, mismo bloqueo por intentos, mismos permisos. La mini web no tiene acceso a pantallas internas."),
 ]
 
 
 # ---------- Word ----------
 d = nuevo_documento("Guía de pruebas por escenarios", "PMS hotelero (piloto) · qué probar, cómo y qué debe pasar")
-parrafo(d, "Versión 1.2 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.3 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todo es ficticio y las confirmaciones, los pagos y las integraciones están simuladas. Marca los resultados en el archivo Excel «checklist-pruebas-pms.xlsx».", "Importante")
 salto(d)
 d.add_heading("Cómo probar", 1)

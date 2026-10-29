@@ -1,0 +1,26 @@
+name: Verificar reserva web (PMS)
+# Ejecución manual: prueba de punta a punta de la reserva web contra Supabase con datos ficticios (bloqueo, consentimiento, pago
+# simulado, confirmación, vencimiento) y limpieza de lo creado. Confirma que los datos del piloto quedan idénticos.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verificar-reserva-web
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Comprobar secreto
+        run: test -n "$DATABASE_URL" || (echo "Falta el secreto DATABASE_URL" && exit 1)
+      - name: Reserva web de punta a punta + limpieza
+        run: python scripts/verificar_reserva_web_prod.py
