@@ -181,6 +181,7 @@ D = "paginas"
 DEF = [  # (clave, archivo, título, ícono, pantalla de permisos)
     ("dashboard", "dashboard.py", "Dashboard del día", "📊", "dashboard"),
     ("calendario", "calendario.py", "Calendario", "🗓️", "calendario"),
+    ("plano", "plano.py", "Plano de habitaciones", "🗺️", "plano"),
     ("reservas", "reservas.py", "Reservas", "📝", "reservas"),
     ("huespedes", "huespedes.py", "Huéspedes", "🧑‍🤝‍🧑", "huespedes"),
     ("housekeeping", "housekeeping.py", "Housekeeping", "🧹", "housekeeping"),

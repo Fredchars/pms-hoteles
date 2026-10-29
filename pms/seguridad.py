@@ -22,6 +22,7 @@ ROL_NOMBRE = {"recepcion": "Recepción", "gerencia": "Gerencia", "housekeeping":
 PERMISOS: dict[str, dict[str, str]] = {
     "dashboard":     {"recepcion": "x", "gerencia": "x", "administrador": "ver"},
     "calendario":    {"recepcion": "x", "gerencia": "x", "administrador": "ver"},
+    "plano":         {"recepcion": "x", "gerencia": "x", "administrador": "ver"},
     "reservas":      {"recepcion": "x", "gerencia": "x", "administrador": "ver"},
     "huespedes":     {"recepcion": "x", "gerencia": "x", "administrador": "ver"},
     "housekeeping":  {"recepcion": "ver", "gerencia": "x", "housekeeping": "x", "administrador": "ver"},

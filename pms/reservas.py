@@ -54,7 +54,7 @@ def _recalcular(cx, reserva_id: int):
 def _validar_ocupacion(tipo: dict, adultos: int, ninos: int):
     if adultos < 1 or ninos < 0:
         raise ErrorNegocio("Debe haber al menos 1 adulto.")
-    if adultos + ninos > tipo["capacidad"]:
+    if not disponibilidad.cabe(tipo["capacidad"], adultos, ninos):
         raise ErrorNegocio(f"El tipo «{tipo['nombre']}» admite máximo {tipo['capacidad']} personas.")
 
 

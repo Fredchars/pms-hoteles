@@ -61,6 +61,16 @@ create table if not exists pms_habitaciones (
   unique (hotel_id, numero)
 );
 
+-- Plano de habitaciones: atributo «vista al mar» (migración idempotente; solo la primera vez rellena según el texto de «vista»)
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_schema = current_schema()
+                 and table_name = 'pms_habitaciones' and column_name = 'vista_mar') then
+    alter table pms_habitaciones add column vista_mar boolean not null default false;
+    update pms_habitaciones set vista_mar = true where vista ~* '(^|[^[:alpha:]])mar([^[:alpha:]]|$)';
+  end if;
+end $$;
+
 create table if not exists pms_camas (
   id bigserial primary key,
   hotel_id bigint not null references pms_hoteles(id),

@@ -65,7 +65,7 @@ with t_hab:
         por.setdefault(c["habitacion_id"], []).append(f"{c['cantidad']} {c['tipo']}" + (f" ({c['ancho_cm']} cm)" if c["ancho_cm"] else ""))
     st.caption("Distribución de prueba provisional (3 pisos × 6 habitaciones). Las camas son información: se vende la habitación, no la cama.")
     st.dataframe([{"Hab.": h["numero"], "Piso": h["planta"], "Tipo": h["tipo"], "Capacidad": h["capacidad"], "m²": h["metros"],
-                   "Vista": h["vista"] or "", "Camas": ", ".join(por.get(h["id"], []))} for h in habs], hide_index=True, width="stretch")
+                   "Vista": h["vista"] or "", "Al mar": "Sí" if h.get("vista_mar") else "", "Camas": ", ".join(por.get(h["id"], []))} for h in habs], hide_index=True, width="stretch")
     if EDITA:
         with st.expander("➕ Crear una habitación"):
             c1, c2 = st.columns(2)
@@ -74,13 +74,14 @@ with t_hab:
             tipo = st.selectbox("Tipo", config.tipos(H["id"]), key="pms_cf_hbt", format_func=lambda t: t["nombre"])
             m2 = st.number_input("Metros cuadrados", 0, 500, 20, key="pms_cf_hbm")
             vi = st.text_input("Vista", key="pms_cf_hbv")
+            vm = st.checkbox("Vista al mar (aparece en el filtro del Plano de habitaciones)", key="pms_cf_hbvm")
             c3, c4, c5 = st.columns(3)
             ct = c3.selectbox("Tipo de cama", config.TIPOS_CAMA, key="pms_cf_hbct")
             ca = c4.number_input("Ancho (cm)", 0, 300, 140, key="pms_cf_hbca")
             cc = c5.number_input("Cantidad", 1, 6, 1, key="pms_cf_hbcc")
             if st.button("Crear habitación", key="pms_cf_hbb"):
                 ui.correr(config.crear_habitacion, A, H["id"], num, int(pl), tipo["id"], int(m2) or None, vi, [(ct, int(ca) or None, int(cc))],
-                          ok="Habitación creada.")
+                          vm or None, ok="Habitación creada.")
 
 with t_u:
     us = config.usuarios(A)

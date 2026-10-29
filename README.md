@@ -8,6 +8,7 @@
 - 3 hoteles de prueba (Colombia/COP, República Dominicana/DOP y otro país/PEN), cada uno con 18 habitaciones provisionales (3 plantas × 6), su moneda local y sus impuestos genéricos (nombre y %).
 - 4 roles: recepción, gerencia, housekeeping y administrador. Descuentos y cancelaciones los aprueba gerencia (quien pide no aprueba).
 - Precio congelado por noche, sin doble venta (índices únicos + bloqueos de concurrencia), consentimiento de datos (Ley 1581), auditoría que no se puede editar.
+- **Plano de habitaciones** (recepción, gerencia; administrador solo consulta): cada planta dibujada con colores por estado en las fechas elegidas (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente), filtros (hotel, planta, fechas, adultos, niños, tipo, solo vista al mar, ocultar no disponibles), detalle con camas y desglose de precio, y «Continuar con la reserva» que prellena Reservas. Usa la misma regla de disponibilidad (`pms/disponibilidad.py`), de tarifas (`pms/tarifas.py`) y de capacidad que Reservas. La vista al mar es la columna `vista_mar` de `pms_habitaciones` (migración idempotente en `db/01_esquema_pms.sql`; se aplica con el workflow de Supabase ANTES de desplegar el código).
 - Fondo blanco, aviso permanente de datos ficticios y marca «Prototipo diseñado para ATm Consulting».
 
 ## Estructura
@@ -16,7 +17,7 @@
 | `app/` | Interfaz Streamlit (`Inicio.py` y `paginas/`) |
 | `pms/` | Reglas de negocio y acceso a datos |
 | `db/` | SQL: 17 tablas `pms_*` y seguridad (RLS) |
-| `tests/` | 51 pruebas de reglas críticas |
+| `tests/` | 90 pruebas (reglas críticas, plano de habitaciones e interfaz) |
 | `scripts/` | Preparar/verificar Supabase, capturas, pruebas de interfaz, generación de documentos |
 | `docs/` | Diseño aprobado, instructivo por rol, guía de pruebas, checklist, capturas |
 | `.github/workflows/` | Pruebas, preparar/verificar Supabase y respaldo cifrado semanal |

@@ -6,6 +6,16 @@ import datetime as dt
 from .errores import ErrorNegocio
 
 
+ESTADOS_PLANO = ("disponible", "ocupada", "opcion", "bloqueada", "fuera_de_servicio", "capacidad")
+NOMBRE_ESTADO_PLANO = {"disponible": "Disponible", "ocupada": "Ocupada", "opcion": "En opción", "bloqueada": "Bloqueada",
+                       "fuera_de_servicio": "Fuera de servicio", "capacidad": "Capacidad insuficiente", "seleccionada": "Seleccionada"}
+
+
+def cabe(capacidad: int, adultos: int, ninos: int) -> bool:
+    """Regla única de capacidad (la usa la reserva y el plano)."""
+    return adultos >= 1 and ninos >= 0 and adultos + ninos <= capacidad
+
+
 def bloqueada(cx, habitacion_id: int, noches: list[dt.date]) -> bool:
     """True si la habitación tiene un bloqueo activo que cubra alguna de las noches."""
     bs = cx.execute("select fecha_desde, fecha_hasta from pms_bloqueos where habitacion_id=%s and activo "
@@ -60,3 +70,40 @@ def asignar(cx, hotel_id: int, tipo_id: int, noches: list[dt.date], preferida: i
         res[n] = previa if previa in cand else cand[0]
         previa = res[n]
     return res
+
+
+def estado_habitaciones(cx, hotel_id: int, noches: list[dt.date], adultos: int = 1, ninos: int = 0,
+                        excluir_reserva: int | None = None) -> list[dict]:
+    """Estado de CADA habitación activa para esas noches (plano de habitaciones). «Disponible» significa exactamente lo mismo que
+    en la reserva: sin noche vendida ni bloqueo en ninguna de las noches (misma consulta que `libres_por_noche`, por tanto
+    misma regla de unicidad habitación+noche), con capacidad suficiente y no fuera de servicio.
+    Prioridad cuando hay varias causas: fuera de servicio > ocupada > bloqueada > en opción > capacidad insuficiente."""
+    libres = libres_por_noche(cx, hotel_id, None, noches, excluir_reserva)
+    libres_ids = set.intersection(*({h["id"] for h in libres[n]} for n in noches))
+    habs = cx.execute("select h.id, h.numero, h.planta, h.tipo_id, h.metros, h.vista, h.vista_mar, h.estado_limpieza, "
+                      "t.nombre tipo, t.capacidad from pms_habitaciones h join pms_tipos_habitacion t on t.id=h.tipo_id "
+                      "where h.hotel_id=%s and h.activo order by h.planta, h.numero", (hotel_id,)).fetchall()
+    ids = [h["id"] for h in habs]
+    ocup = cx.execute("select n.habitacion_id, r.estado from pms_reserva_noches n join pms_reservas r on r.id=n.reserva_id "
+                      "where n.activa and n.habitacion_id = any(%s) and n.noche = any(%s) and (%s::bigint is null or n.reserva_id <> %s)",
+                      (ids, noches, excluir_reserva, excluir_reserva)).fetchall() if ids else []
+    bloq = cx.execute("select habitacion_id, fecha_desde, fecha_hasta from pms_bloqueos where activo and habitacion_id = any(%s) "
+                      "and fecha_desde <= %s and fecha_hasta >= %s", (ids, max(noches), min(noches))).fetchall() if ids else []
+    bloqueadas = {b["habitacion_id"] for b in bloq if any(b["fecha_desde"] <= n <= b["fecha_hasta"] for n in noches)}
+    firmes = {o["habitacion_id"] for o in ocup if o["estado"] not in ("consulta", "opcion")}
+    blandas = {o["habitacion_id"] for o in ocup if o["estado"] in ("consulta", "opcion")}
+    out = []
+    for h in habs:
+        i = h["id"]
+        if h["estado_limpieza"] == "fuera_de_servicio":
+            est = "fuera_de_servicio"
+        elif i in libres_ids:
+            est = "disponible" if cabe(h["capacidad"], adultos, ninos) else "capacidad"
+        elif i in firmes:
+            est = "ocupada"
+        elif i in bloqueadas:
+            est = "bloqueada"
+        else:
+            est = "opcion" if i in blandas else "ocupada"
+        out.append({**h, "estado": est, "disponible": est == "disponible"})
+    return out

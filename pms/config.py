@@ -125,9 +125,15 @@ def habitaciones(hotel_id: int, solo_activas=True) -> list[dict]:
         "where h.hotel_id=%s" + (" and h.activo" if solo_activas else "") + " order by h.planta, h.numero", (hotel_id,))
 
 
+def _es_vista_mar(vista: str) -> bool:
+    return bool(re.search(r"(?<![a-záéíóúñ])mar(?![a-záéíóúñ])", (vista or "").lower()))
+
+
 def crear_habitacion(actor, hotel_id: int, numero: str, planta: int, tipo_id: int, metros: int | None = None,
-                     vista: str = "", camas: list[tuple[str, int | None, int]] | None = None) -> int:
-    """camas = [(tipo, ancho_cm, cantidad)]: información de la habitación; no se vende cama por cama."""
+                     vista: str = "", camas: list[tuple[str, int | None, int]] | None = None,
+                     vista_mar: bool | None = None) -> int:
+    """camas = [(tipo, ancho_cm, cantidad)]: información de la habitación; no se vende cama por cama.
+    vista_mar=None → se deduce del texto de la vista (por ejemplo «Al mar»)."""
     seguridad.exigir(actor, "configuracion")
     seguridad.exigir_hotel(actor, hotel_id)
     with db.tx() as cx:
@@ -136,8 +142,9 @@ def crear_habitacion(actor, hotel_id: int, numero: str, planta: int, tipo_id: in
             raise ErrorNegocio("El tipo de habitación no pertenece a este hotel.")
         if cx.execute("select 1 from pms_habitaciones where hotel_id=%s and numero=%s", (hotel_id, numero)).fetchone():
             raise ErrorNegocio(f"Ya existe la habitación {numero}.")
-        r = cx.execute("insert into pms_habitaciones (hotel_id, numero, planta, tipo_id, metros, vista) "
-                       "values (%s,%s,%s,%s,%s,%s) returning id", (hotel_id, numero, planta, tipo_id, metros, vista)).fetchone()
+        mar = _es_vista_mar(vista) if vista_mar is None else bool(vista_mar)
+        r = cx.execute("insert into pms_habitaciones (hotel_id, numero, planta, tipo_id, metros, vista, vista_mar) "
+                       "values (%s,%s,%s,%s,%s,%s,%s) returning id", (hotel_id, numero, planta, tipo_id, metros, vista, mar)).fetchone()
         for tipo, ancho, cant in camas or []:
             if tipo not in TIPOS_CAMA:
                 raise ErrorNegocio(f"Tipo de cama no válido: {tipo}")

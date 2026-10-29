@@ -17,3 +17,7 @@ textColor = "#1f2933"
 [theme.sidebar]
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F4F6F8"
+
+[global]
+# El prellenado desde el Plano usa st.session_state antes de crear los widgets (patrón previsto); evita el aviso duplicado en los logs.
+disableWidgetStateDuplicationWarning = true

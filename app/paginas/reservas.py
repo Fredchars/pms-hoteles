@@ -17,7 +17,17 @@ COM_SUGERIDA = {"booking": 15, "airbnb": 3, "agencia": 10}
 
 if not EDITA:
     st.info("Tu rol solo puede consultar reservas.")
-t_lista, t_nueva, t_gest, t_aprob = st.tabs(["📋 Lista", "➕ Nueva reserva", "🛠️ Gestionar una reserva", "⏳ Cancelaciones pendientes"])
+
+# --- datos que llegan del Plano de habitaciones («Continuar con la reserva»): se aplican UNA vez, antes de crear los campos ---
+PRE = st.session_state.pop("pms_prellenado_reserva", None)
+if PRE and PRE.get("hotel_id") == H["id"] and EDITA:
+    _tipo = next((t for t in config.tipos(H["id"]) if t["id"] == PRE["tipo_id"]), None)
+    if _tipo:
+        st.session_state.update({"pms_rn_tipo": _tipo, "pms_rn_entrada": PRE["entrada"], "pms_rn_salida": PRE["salida"],
+                                 "pms_rn_adultos": int(PRE["adultos"]), "pms_rn_ninos": int(PRE["ninos"]), "pms_rn_hab": PRE["habitacion_id"],
+                                 "pms_rn_pre": {k: PRE[k] for k in ("habitacion_id", "numero", "tipo")}, "pms_rn_abrir_nueva": True})
+t_lista, t_nueva, t_gest, t_aprob = st.tabs(["📋 Lista", "➕ Nueva reserva", "🛠️ Gestionar una reserva", "⏳ Cancelaciones pendientes"],
+                                             default="➕ Nueva reserva" if st.session_state.get("pms_rn_abrir_nueva") else None)
 
 # ---------------- Lista ----------------
 with t_lista:
@@ -54,11 +64,22 @@ with t_nueva:
         ui.enlace("huespedes", "¿No existe? Crear huésped y registrar su consentimiento →")
 
         st.subheader("2. Estancia")
+        pre = st.session_state.get("pms_rn_pre")
+        if pre:
+            st.info(f"🗺️ Datos traídos del Plano de habitaciones: habitación **{pre['numero']}** ({pre['tipo']}), fechas y huéspedes. "
+                    "Elige el huésped arriba y revisa el precio. Puedes cambiar cualquier dato.")
         tipos = config.tipos(H["id"])
         c1, c2, c3 = st.columns(3)
         tipo = c1.selectbox("Tipo de habitación", tipos, key="pms_rn_tipo", format_func=lambda t: f"{t['nombre']} (hasta {t['capacidad']})")
         entrada = c2.date_input("Entrada", value=hoy, key="pms_rn_entrada", format="DD/MM/YYYY")
         salida = c3.date_input("Salida", value=hoy + dt.timedelta(days=2), key="pms_rn_salida", format="DD/MM/YYYY")
+        habs_tipo = [h for h in config.habitaciones(H["id"]) if h["tipo_id"] == tipo["id"]]
+        if st.session_state.get("pms_rn_hab") not in [h["id"] for h in habs_tipo]:
+            st.session_state.pop("pms_rn_hab", None)         # el tipo cambió: la habitación elegida ya no corresponde
+        hab_sel = st.selectbox("Habitación (opcional)", [None] + [h["id"] for h in habs_tipo], key="pms_rn_hab",
+                               format_func=lambda i: "Asignar automáticamente" if i is None else
+                               next(f"{h['numero']} · piso {h['planta']}" for h in habs_tipo if h["id"] == i),
+                               help="Si eliges una habitación, debe estar libre todas las noches. También puedes elegirla desde el Plano de habitaciones.")
         c4, c5, c6 = st.columns(3)
         adultos = c4.number_input("Adultos", 1, 10, 2, key="pms_rn_adultos")
         ninos = c5.number_input("Niños", 0, 10, 0, key="pms_rn_ninos")
@@ -76,12 +97,10 @@ with t_nueva:
         try:
             noches = noches_entre(entrada, salida)
             with db.tx() as cx:
-                precios = tarifas.precios_para(cx, tipo["id"], noches)
-                imp = config.impuestos_congelados(cx, H["id"])
-            st.dataframe([{"Noche": ui.f_fecha(n), "Precio": ui.dinero(p)} for n, p in precios.items()], hide_index=True, width="stretch")
-            sub = sum(precios.values())
-            lineas = [("Subtotal alojamiento", sub)] + [(f"{i['nombre']} ({i['porcentaje']} %)", dinero(sub * Decimal(str(i["porcentaje"])) / 100)) for i in imp]
-            total = sub + sum(v for k, v in lineas[1:])
+                cot = tarifas.cotizar(cx, H["id"], tipo["id"], noches)
+            sub, total = cot["subtotal"], cot["total"]
+            st.dataframe([{"Noche": ui.f_fecha(n), "Precio": ui.dinero(p)} for n, p in cot["noches"]], hide_index=True, width="stretch")
+            lineas = [("Subtotal alojamiento", sub)] + [(f"{i['nombre']} ({i['porcentaje']} %)", i["monto"]) for i in cot["impuestos"]]
             for k, v in lineas:
                 st.write(f"{k}: **{ui.dinero(v)}**")
             st.write(f"**Total estimado: {ui.dinero(total)}** ({H['moneda']}) · el precio de cada noche queda congelado al guardar.")
@@ -91,8 +110,10 @@ with t_nueva:
             st.warning(str(e))
         if st.button("Guardar reserva", type="primary", key="pms_rn_guardar", disabled=hs is None):
             r = ui.correr(reservas.crear, A, H["id"], hs["id"], tipo["id"], entrada, salida, int(adultos), int(ninos), estado, canal, com,
-                          ref or None, notas, ok="Reserva creada. Puedes gestionarla en la pestaña «Gestionar una reserva».", recargar=False)
+                          ref or None, notas, habitacion_id=hab_sel, ok="Reserva creada. Puedes gestionarla en la pestaña «Gestionar una reserva».", recargar=False)
             if r:
+                st.session_state.pop("pms_rn_pre", None)
+                st.session_state.pop("pms_rn_abrir_nueva", None)
                 st.session_state["pms_gest_reserva"] = r["id"]
                 st.rerun()
 

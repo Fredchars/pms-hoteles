@@ -14,10 +14,11 @@ D["limpieza"] = diagrama("flujo_limpieza", ["Sucia", "En limpieza", "En inspecci
 D["descuento"] = diagrama("flujo_descuento", ["Recepción pide\ndescuento (%)", "Pendiente:\nno cuenta aún", "Gerencia (otra\npersona) decide", "Aprobado: baja\nel total"], colores={1: NA, 3: VE}, cols=4, alto=1.3, ancho=10)
 D["primer"] = diagrama("flujo_primer_ingreso", ["Ingresas con tu\ncorreo y la clave\ntemporal", "Aparece solo\n«Crea tu contraseña\nnueva»", "Escribes la nueva\ny la confirmas", "Guardas y\nentras al\nsistema"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
 D["temporal"] = diagrama("flujo_clave_temporal", ["Administrador\npulsa «Generar\ncontraseña temporal»", "Se muestra\nUNA sola vez", "La entregas\npor un canal\nprivado", "La persona crea\nsu contraseña\nal ingresar"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
+D["plano"] = diagrama("flujo_plano", ["Elegir hotel,\nfechas y\nhuéspedes", "Ver la planta\ncon colores\npor estado", "Clic en una\nhabitación\ndisponible", "Revisar camas\ny desglose\ndel precio", "Continuar con\nla reserva", "Reservas ya\ntrae los datos"], colores={2: NA, 5: VE}, cols=3, alto=1.3, ancho=9)
 D["admin"] = diagrama("flujo_admin", ["Crear hotel\n(país y moneda)", "Impuestos\n(nombre y %)", "Tipos de\nhabitación", "Habitaciones\ny camas", "Usuarios\ny roles"], cols=5, alto=1.3, ancho=11)
 
 d = nuevo_documento("Instructivo por rol", "PMS hotelero (piloto) · recepción, gerencia, housekeeping y administrador")
-parrafo(d, "Versión 1.1 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.2 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todos los datos del piloto son ficticios (hoteles, huéspedes, reservas, pagos). Los correos de confirmación, los pagos y las conexiones "
         "con otras plataformas están simulados: la pantalla siempre lo avisa. El comprobante PDF NO es una factura legal.", "Importante")
 salto(d)
@@ -52,6 +53,7 @@ parrafo(d, "Pide al administrador que te genere una contraseña temporal nueva (
 d.add_heading(lim("Qué ve cada rol"), 2)
 tabla(d, ["Pantalla", "Recepción", "Gerencia", "Housekeeping", "Administrador"], [
     ["Dashboard del día", "Usa", "Usa", "—", "Ver"], ["Calendario", "Usa", "Usa", "—", "Ver"],
+    ["Plano de habitaciones", "Usa (puede continuar a Reservas)", "Usa", "—", "Ver (solo consulta)"],
     ["Reservas", "Usa (cancelar pide gerencia)", "Usa y aprueba", "—", "Ver"], ["Huéspedes", "Usa", "Usa", "—", "Ver"],
     ["Housekeeping", "Ver", "Usa", "Usa", "Ver"], ["Bloqueos", "Ver", "Usa", "Ver", "Usa"],
     ["Tarifas", "Ver", "Usa", "—", "Usa"], ["Facturación", "Usa (descuentos piden gerencia)", "Usa y aprueba", "—", "Ver"],
@@ -71,9 +73,9 @@ d.add_heading(lim("1.2 Crear una reserva"), 2)
 imagen(d, D["reserva"], 14)
 lista(d, ["Ve a «Reservas» y abre la pestaña «➕ Nueva reserva».",
           "Paso 1: busca al huésped por nombre, documento o correo. Si no existe, usa el enlace «Crear huésped» y registra su consentimiento de datos.",
-          "Paso 2: elige tipo de habitación, fechas de entrada y salida, adultos y niños. «Estado inicial» puede ser consulta, opción o confirmada.",
+          "Paso 2: elige tipo de habitación, fechas de entrada y salida, adultos y niños. «Habitación (opcional)» te deja escoger una habitación concreta; si la dejas en «Asignar automáticamente», el sistema elige una libre. «Estado inicial» puede ser consulta, opción o confirmada.",
           "Paso 3: revisa el desglose por noche, los impuestos del hotel y el total. El precio de cada noche queda congelado al guardar.",
-          "Pulsa «Guardar reserva». El sistema asigna una habitación libre. Si no hay, te avisa en rojo y no guarda nada.",
+          "Pulsa «Guardar reserva». El sistema usa la habitación elegida o asigna una libre. Si no hay, te avisa en rojo y no guarda nada.",
           "Para avisar al huésped usa «Simular envío de confirmación» (en «Gestionar una reserva»). Es una simulación: no sale ningún correo real."], numerada=True)
 nota(d, "El sistema no permite vender dos veces la misma habitación en la misma noche, ni aunque dos personas guarden al mismo tiempo.")
 d.add_heading(lim("1.3 Recibir al huésped (check-in) y despedirlo (check-out)"), 2)
@@ -105,11 +107,35 @@ lista(d, ["«Huéspedes» → «🔎 Buscar y ver ficha» o «➕ Nuevo huésped
 d.add_heading(lim("1.7 Calendario"), 2)
 parrafo(d, "El calendario es una rejilla de habitaciones por días, con colores por estado. Solo sirve para mirar: las reservas se crean y cambian en «Reservas».")
 imagen(d, CAPT / "calendario.png", 15.5, "Calendario de solo lectura (datos ficticios)")
+d.add_heading(lim("1.8 Plano de habitaciones: elegir la habitación mirando el plano"), 2)
+parrafo(d, "Es una forma visual de reservar: ves cada planta del hotel dibujada con sus habitaciones, el color de cada una según su estado en las fechas "
+           "que tú escojas, y desde el plano pasas a «Reservas» con todo ya escrito. Usa exactamente las mismas reglas que «Reservas»: "
+           "una habitación solo se muestra como disponible si realmente se puede vender esas noches.")
+imagen(d, D["plano"], 14)
+lista(d, ["Entra a «Plano de habitaciones» en el menú de la izquierda.",
+          "Arriba elige el hotel (si tienes varios), la fecha de entrada y de salida, y cuántos adultos y niños. Los números de arriba (disponibles, ocupadas, en opción…) se actualizan solos.",
+          "Elige la planta (1, 2 o 3). Las habitaciones con vista al mar aparecen junto a la franja azul «MAR»; las demás, bajo la franja «PASILLO».",
+          "Filtros opcionales: «Tipo de habitación», «🌊 Solo vista al mar» y «Ocultar no disponibles» (deja en pantalla solo lo que se puede vender).",
+          "Pulsa «Elegir» en una habitación verde (disponible). Se pinta de azul y a la derecha aparece el detalle: planta, metros, capacidad, vista, camas y el desglose del precio (cada noche, impuestos del hotel y total).",
+          "Pulsa «Continuar con la reserva →». Se abre «Reservas» → «Nueva reserva» con el tipo, la habitación, las fechas y los huéspedes ya puestos. Solo te falta elegir al huésped, revisar el precio y pulsar «Guardar reserva»."], numerada=True)
+imagen(d, CAPT / "plano.png", 15.5, "Plano de la planta 1 con todos los estados (datos ficticios)")
+imagen(d, CAPT / "plano_detalle.png", 15.5, "Habitación elegida: detalle y desglose del precio")
+imagen(d, CAPT / "plano_reserva.png", 15.5, "«Reservas» con los datos traídos del plano")
+tabla(d, ["Color", "Qué significa"], [
+    ["Verde · Disponible", "Se puede vender todas las noches pedidas y cabe el número de personas."],
+    ["Rojo · Ocupada", "Ya tiene una reserva (confirmada, alojada…) en alguna de esas noches."],
+    ["Amarillo · En opción", "Tiene una reserva solo en opción o consulta: todavía no es firme, pero ya ocupa la noche."],
+    ["Rayado rojo · Bloqueada", "Un bloqueo por mantenimiento (pantalla «Bloqueos») la retiene esas fechas."],
+    ["Rayado gris · Fuera de servicio", "Housekeeping la marcó fuera de servicio (por ejemplo, una avería). No se puede elegir."],
+    ["Azul · Seleccionada", "La habitación que escogiste para continuar con la reserva."],
+    ["Gris claro · Capacidad insuficiente", "Está libre, pero no cabe el número de adultos y niños que pusiste. Cambia las personas o elige otra."]], anchos=[5, 11.5])
+nota(d, "El plano se actualiza cada vez que cambias un dato. Si mientras tanto otra persona reserva esa habitación, al pulsar «Continuar con la reserva» el sistema te avisa y no pasa nada raro. "
+        "Y si «Reservas» no puede guardar por cualquier motivo, no se pierde la sesión ni lo que escribiste.", "Ojo")
 salto(d)
 
 # ---------- GERENCIA ----------
 d.add_heading(lim("2. Gerencia"), 1)
-parrafo(d, "Gerencia hace todo lo de recepción y además aprueba, cambia tarifas y ve los reportes.")
+parrafo(d, "Gerencia hace todo lo de recepción (incluido el Plano de habitaciones, sección 1.8) y además aprueba, cambia tarifas y ve los reportes.")
 d.add_heading(lim("2.1 Aprobar o rechazar cancelaciones"), 2)
 lista(d, ["«Reservas» → pestaña «⏳ Cancelaciones pendientes».",
           "Lee el motivo, escribe un comentario (opcional) y pulsa aprobar o rechazar.",
@@ -154,7 +180,7 @@ tabla(d, ["Pestaña", "Para qué sirve"], [
     ["🏨 Hoteles", "Crear un hotel con su país, moneda local y zona horaria."],
     ["🧮 Impuestos", "Cada hotel tiene sus propios impuestos: nombre y porcentaje. Son genéricos, no se asume la norma de un país."],
     ["🛏️ Tipos de habitación", "Nombre, capacidad y descripción (Familiar, Triple, Doble, Individual…)."],
-    ["🚪 Habitaciones y camas", "Cada habitación con su planta, tipo, vista y camas. El piloto trae una distribución de prueba provisional de 18 habitaciones (3 plantas × 6)."],
+    ["🚪 Habitaciones y camas", "Cada habitación con su planta, tipo, vista, camas y la casilla «Vista al mar» (alimenta el filtro del Plano de habitaciones). El piloto trae una distribución de prueba provisional de 18 habitaciones (3 plantas × 6)."],
     ["👤 Usuarios", "Crear usuarios, asignarles rol y hotel, cambiar contraseña, generar una contraseña temporal o desactivarlos. La tabla indica quién todavía debe crear su contraseña."]], anchos=[4.5, 12])
 d.add_heading(lim("4.2 Generar una contraseña temporal"), 2)
 parrafo(d, "Sirve cuando alguien olvidó su contraseña o cuando creas a una persona nueva. Está en «Configuración» → pestaña «Usuarios» → «Generar contraseña temporal».")
@@ -169,7 +195,7 @@ imagen(d, CAPT / "admin_clave_temporal.png", 15.5, "Configuración → Usuarios 
 nota(d, "Si pulsas otro botón o recargas la página, la contraseña temporal ya no se muestra. Si la perdiste antes de entregarla, genera otra.")
 d.add_heading(lim("4.3 Otras tareas"), 2)
 lista(d, ["Bloqueos y tarifas: igual que gerencia (ver capítulo 2).", "Reportes: igual que gerencia.",
-          "Auditoría: consultar quién hizo qué.", "Dashboard, calendario, reservas, huéspedes y facturación: solo consulta."])
+          "Auditoría: consultar quién hizo qué.", "Dashboard, calendario, plano de habitaciones, reservas, huéspedes y facturación: solo consulta (en el plano puedes ver el detalle y el precio, pero no aparece «Continuar con la reserva»)."])
 nota(d, "Los cambios de impuestos solo afectan a las líneas nuevas: las ya cobradas conservan el porcentaje con el que se cobraron.")
 imagen(d, CAPT / "admin_configuracion.png", 15.5, "Configuración (datos ficticios)")
 salto(d)
@@ -181,6 +207,8 @@ tabla(d, ["Pregunta", "Respuesta"], [
     ["Olvidé mi contraseña.", "Pide al administrador una contraseña temporal nueva. Ingresas con ella y creas otra propia."],
     ["Me pide «Crea tu contraseña nueva» y no me deja avanzar.", "Es lo esperado en el primer ingreso o tras recibir una temporal nueva: crea la contraseña (mínimo 10 caracteres, distinta de la temporal). Hasta entonces no se abre ninguna otra pantalla."],
     ["Me bloquearon el acceso.", "Fueron 5 intentos fallidos. Espera 15 minutos o pídele al administrador que revise tu usuario."],
+    ["En el plano no puedo elegir una habitación.", "Solo se pueden elegir las verdes (disponibles). Revisa la leyenda: puede estar ocupada, en opción, bloqueada, fuera de servicio o no caber las personas que indicaste."],
+    ["Elegí una habitación y desapareció la selección.", "Cambiaron las fechas, las personas o el estado de esa habitación (por ejemplo, otra persona la reservó). Elige de nuevo."],
     ["¿El correo de confirmación sale de verdad?", "No. Es una simulación y la pantalla lo avisa."],
     ["¿Puedo usar el comprobante como factura?", "No. Es solo un comprobante de cuenta del piloto."],
     ["¿Los datos son reales?", "No. Todo es ficticio. No cargues datos reales de personas en el piloto."]], anchos=[6, 10.5])

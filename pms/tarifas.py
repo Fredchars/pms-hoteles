@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime as dt
 from decimal import Decimal
 
-from . import db, seguridad
+from . import config, db, seguridad
 from .auditoria import registrar
 from .errores import ErrorNegocio
 from .util import dinero, hotel_de, noches_entre
@@ -85,3 +85,18 @@ def validar_estancia_minima(cx, tipo_id: int, entrada: dt.date, total_noches: in
     t = tarifa_de_noche(cx, tipo_id, entrada)
     if t and total_noches < t["estancia_minima"]:
         raise ErrorNegocio(f"La estancia mínima para entrar el {entrada:%d/%m/%Y} es de {t['estancia_minima']} noches.")
+
+
+def cotizar(cx, hotel_id: int, tipo_id: int, noches: list[dt.date], personas: int | None = None) -> dict:
+    """Cotización de una estancia (misma que muestra Reservas): precio por noche, subtotal, impuestos del hotel y total.
+    La tarifa es por habitación y noche; `por_persona_noche` es solo informativo (total ÷ personas ÷ noches).
+    Lanza ErrorNegocio si falta tarifa, hay cierre de ventas o no se cumple la estancia mínima."""
+    precios = precios_para(cx, tipo_id, noches)
+    validar_estancia_minima(cx, tipo_id, noches[0], len(noches))
+    subtotal = sum(precios.values())
+    imp = [{"nombre": i["nombre"], "porcentaje": i["porcentaje"], "monto": dinero(subtotal * Decimal(str(i["porcentaje"])) / 100)}
+           for i in config.impuestos_congelados(cx, hotel_id)]
+    total = subtotal + sum(i["monto"] for i in imp)
+    pp = dinero(total / personas / len(noches)) if personas else None
+    return {"noches": list(precios.items()), "subtotal": subtotal, "impuestos": imp, "total": total, "por_persona_noche": pp,
+            "promedio_noche": dinero(subtotal / len(noches))}

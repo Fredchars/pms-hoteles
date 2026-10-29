@@ -14,3 +14,5 @@ Actualizado el 28 oct 2026.
 - (ninguno; app desplegada en https://pms-hoteles-atm.streamlit.app/)
 
 10. **Documentación del primer ingreso** (v1.1): instructivo y guía de pruebas actualizados (ingreso con contraseña temporal, «Crea tu contraseña nueva», «Generar contraseña temporal», escenarios E33–E38 y checklist). Capturas con datos ficticios en base local: `scripts/capturas_primer_ingreso.py`.
+
+11. **Plano de habitaciones** (28 oct 2026): nueva página `app/paginas/plano.py` (+ `pms/plano.py`) con estados por habitación y fechas, filtros, detalle con precio y «Continuar con la reserva» (prellena Reservas; nueva casilla «Habitación (opcional)»). Columna `vista_mar` con migración idempotente y casilla en Configuración. Reutiliza `disponibilidad.libres_por_noche`, `disponibilidad.cabe` y `tarifas.cotizar`. 90 pruebas en verde (`tests/test_plano.py`, `tests/test_interfaz_plano.py`). Documentos v1.2: instructivo (sección 1.8), guía (escenarios E39–E49) y checklist. Capturas: `scripts/capturas_plano.py`.

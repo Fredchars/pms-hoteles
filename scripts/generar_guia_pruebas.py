@@ -26,7 +26,7 @@ E = [
   "No aparecen botones de «entrar sin contraseña». Solo correo y contraseña."),
  ("E05", "Roles", "Cada rol ve solo lo suyo", f"{U['rec']}, {U['ger1']}, {U['hk1']}, {U['adm']}",
   ["Ingresa con cada usuario y revisa el menú de la izquierda.", "Compara con la tabla de permisos del instructivo."],
-  "Recepción no ve Reportes, Configuración ni Auditoría. Housekeeping solo ve Housekeeping y Bloqueos y no ve precios. Gerencia ve Reportes. Administrador ve Configuración."),
+  "Recepción ve el Plano de habitaciones pero no Reportes, Configuración ni Auditoría. Housekeeping solo ve Housekeeping y Bloqueos (ni plano ni precios). Gerencia ve Reportes. Administrador ve Configuración."),
  ("E06", "Roles", "Un hotel no ve datos de otro", U["rec"],
   ["Ingresa con recepción de un hotel.", "Revisa el selector de hotel."],
   "Solo aparece su hotel. Las reservas y huéspedes son solo de ese hotel."),
@@ -130,12 +130,48 @@ E = [
   ["Con recepción 2 ya con contraseña propia, deja su sesión abierta en un navegador.", "Con el administrador: Configuración → Usuarios → Generar contraseña temporal junto a recepcion2.col. Copia la contraseña que aparece.",
    "Pulsa otro botón o recarga la página del administrador.", "En el navegador de recepción 2, pulsa cualquier opción o recarga.", "Ingresa como recepción 2 con la temporal y crea una contraseña nueva."],
   "La contraseña temporal se muestra una sola vez y desaparece al recargar o pulsar otro botón. La tabla de usuarios marca «Sí» en «Debe crear su contraseña». La sesión anterior de recepción 2 se cierra y vuelve a la pantalla de ingreso. Con la temporal pide crear la contraseña nueva. En Auditoría queda quién la generó y para quién, sin la contraseña. El administrador no puede generarla para sí mismo."),
+
+ ("E39", "Plano de habitaciones", "El plano se ve con hotel, planta y leyenda", U["rec"],
+  ["Ingresa y abre «Plano de habitaciones» en el menú.", "Mira los selectores de hotel y de planta y cambia entre Planta 1, 2 y 3.", "Revisa la leyenda y los números de arriba (disponibles, ocupadas, en opción, no operativas, capacidad insuficiente)."],
+  "Cada planta muestra sus 6 habitaciones dibujadas como tarjetas, con número, tipo, capacidad, metros y precio por noche. La leyenda explica los siete colores (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente). Las de vista al mar quedan junto a la franja «MAR». Recepción solo ve su hotel."),
+ ("E40", "Plano de habitaciones", "Los colores cambian con las fechas", f"{U['rec']} y {U['ger1']}",
+  ["Con recepción, crea una reserva confirmada de 2 noches desde mañana en una habitación concreta (en «Reservas», casilla «Habitación (opcional)»).", "En el plano pon esas mismas fechas de entrada y salida.", "Pon como entrada el día de salida de esa reserva.",
+   "Crea otra reserva en estado «opción» y un bloqueo (gerencia, pantalla «Bloqueos») en otras dos habitaciones y vuelve al plano con esas fechas."],
+  "Con las mismas fechas, la habitación reservada sale roja «Ocupada». Con entrada el día de salida vuelve a verse verde (la noche de salida está libre). La de opción sale amarilla «En opción» y la bloqueada rayada «Bloqueada». El resumen de arriba cuenta cada estado."),
+ ("E41", "Plano de habitaciones", "Fuera de servicio y capacidad insuficiente", f"{U['hk1']} y {U['rec']}",
+  ["Con housekeeping, pasa una habitación a «Fuera de servicio» (con nota).", "Con recepción, abre el plano con 2 adultos y mira la habitación Individual (capacidad 1) y la que pusiste fuera de servicio.", "Sube a 5 adultos y mira las demás habitaciones."],
+  "La habitación fuera de servicio sale con rayado gris y sin botón «Elegir». La Individual sale en gris claro «Capacidad insuficiente» con 2 adultos, y las demás de menor capacidad también al subir las personas. Ninguna de ellas se puede elegir."),
+ ("E42", "Plano de habitaciones", "Filtros: tipo, vista al mar y ocultar no disponibles", U["rec"],
+  ["Elige un tipo de habitación en «Tipo de habitación».", "Vuelve a «Todos los tipos» y activa «🌊 Solo vista al mar».", "Activa «Ocultar no disponibles» con un día que tenga habitaciones ocupadas.", "Combina los tres filtros y cambia de planta."],
+  "Cada filtro deja en pantalla solo lo que corresponde: por tipo, solo ese tipo; con vista al mar, solo las habitaciones marcadas con 🌊 (en el piloto, x01 y x02 de cada planta); con «Ocultar no disponibles», solo las verdes. Si no queda ninguna, un aviso lo dice."),
+ ("E43", "Plano de habitaciones", "Elegir una habitación y ver el detalle con el desglose del precio", U["rec"],
+  ["Pulsa «Elegir» en una habitación verde.", "Lee el panel de detalle a la derecha.", "Compara el total con el de «Reservas» para el mismo tipo y fechas.", "Cambia las fechas o el número de personas y observa el panel."],
+  "La tarjeta se pinta azul «Seleccionada». El panel muestra planta, metros, capacidad, vista, camas, cada noche con su precio, subtotal, impuestos del hotel (con su %), total y el aproximado por persona y noche. El total coincide con el que calcula «Reservas». Si la habitación deja de estar disponible por el cambio, la selección se quita sola."),
+ ("E44", "Plano de habitaciones", "Continuar con la reserva: datos prellenados", U["rec"],
+  ["En el plano elige una habitación verde con fechas y personas distintas de las que trae por defecto.", "Pulsa «Continuar con la reserva →».", "En «Reservas» revisa tipo, habitación, fechas, adultos y niños.", "Elige un huésped con consentimiento y pulsa «Guardar reserva».", "Vuelve a «Plano de habitaciones»."],
+  "Se abre «Reservas» en «Nueva reserva» con un aviso azul «Datos traídos del Plano de habitaciones» y todo ya escrito. No se pierde la sesión ni hay que ingresar de nuevo. Al guardar, la reserva queda en esa habitación exacta y, al volver al plano, aparece roja «Ocupada» para esas fechas."),
+ ("E45", "Plano de habitaciones", "Nadie la reservó entretanto: no se vende dos veces", f"{U['rec']} y {U['rec2']}",
+  ["Con recepción 1 abre el plano y elige una habitación verde, sin pulsar aún «Continuar».", "Con recepción 2 (otro navegador) crea una reserva en esa misma habitación y fechas.", "Con recepción 1 pulsa «Continuar con la reserva →»."],
+  "El sistema avisa que la habitación ya no está disponible y no abre «Reservas» con datos viejos. Si de todos modos se intenta guardar una reserva en una habitación ya vendida esa noche, «Reservas» la rechaza: nunca hay dos reservas en la misma habitación y noche."),
+ ("E46", "Plano de habitaciones", "Reservas: habitación opcional y asignación automática", U["rec"],
+  ["En «Reservas» → «Nueva reserva» deja «Habitación (opcional)» en «Asignar automáticamente» y guarda una reserva.", "Crea otra y elige una habitación concreta de la lista.", "Intenta elegir una habitación y luego cambia el tipo de habitación."],
+  "Con asignación automática el sistema elige una habitación libre (como siempre). Con una habitación elegida, la reserva queda en ella. Al cambiar el tipo, la lista de habitaciones se actualiza y no queda una habitación de otro tipo seleccionada."),
+ ("E47", "Plano de habitaciones", "Sin tarifa, cierre de ventas o estancia mínima", f"{U['ger1']} y {U['rec']}",
+  ["Con gerencia, crea una tarifa con «cierre de ventas» o con estancia mínima de 3 noches para un tipo y unas fechas.", "Con recepción, abre el plano con esas fechas (1 o 2 noches) y elige una habitación de ese tipo.", "Prueba también unas fechas lejanas sin tarifa."],
+  "El panel muestra un aviso claro (ventas cerradas, estancia mínima o sin tarifa) en lugar del precio y el botón «Continuar con la reserva →» queda desactivado. Con fechas válidas se activa."),
+ ("E48", "Plano de habitaciones", "Administrador y gerencia: permisos", f"{U['adm']}, {U['ger1']}, {U['hk1']}",
+  ["Con el administrador abre el plano, cambia de hotel y elige una habitación verde.", "Con gerencia abre el plano y continúa con una reserva.", "Con housekeeping mira el menú."],
+  "El administrador ve todos los hoteles y el detalle y precio, pero NO tiene el botón «Continuar con la reserva» (solo consulta). Gerencia lo usa igual que recepción. Housekeeping no tiene «Plano de habitaciones» en el menú. Al cambiar de hotel en el plano, el selector de la barra lateral cambia con él."),
+ ("E49", "Plano de habitaciones", "Vista al mar configurable y sin acceso antes de crear la contraseña", f"{U['adm']} y {U['rec2']}",
+  ["Con el administrador: Configuración → Habitaciones y camas: crea una habitación con la casilla «Vista al mar» marcada y revisa la columna «Al mar» de la tabla.", "Abre el plano con «Solo vista al mar».",
+   "Con un usuario que aún tenga contraseña temporal (E36), ingresa e intenta abrir la dirección terminada en /plano."],
+  "La habitación nueva aparece con 🌊 y en el filtro de vista al mar. Antes de crear la contraseña nueva solo se ve «Crea tu contraseña nueva»: el plano no abre."),
 ]
 
 
 # ---------- Word ----------
 d = nuevo_documento("Guía de pruebas por escenarios", "PMS hotelero (piloto) · qué probar, cómo y qué debe pasar")
-parrafo(d, "Versión 1.1 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.2 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todo es ficticio y las confirmaciones, los pagos y las integraciones están simuladas. Marca los resultados en el archivo Excel «checklist-pruebas-pms.xlsx».", "Importante")
 salto(d)
 d.add_heading("Cómo probar", 1)
@@ -197,7 +233,7 @@ n = 3 + len(E)
 for k in ("Pendiente", "Pasó", "Falló", "No aplica"):
     res.append([k, f'=COUNTIF(Checklist!G4:G{n},"{k}")'])
 res.append(["Total", f"=COUNTA(Checklist!A4:A{n})"]); res.append(["% que pasó", f'=IFERROR(COUNTIF(Checklist!G4:G{n},"Pasó")/(COUNTA(Checklist!A4:A{n})-COUNTIF(Checklist!G4:G{n},"No aplica")),0)'])
-res["B9"].number_format = "0%"; res.column_dimensions["A"].width = 18
+res["B8"].number_format = "0%"; res.column_dimensions["A"].width = 18
 lee = wb.create_sheet("Cómo usar")
 for l in ["1. Abre https://pms-hoteles-atm.streamlit.app/ y pide a ATm Consulting las contraseñas temporales de prueba (se entregan aparte). Cada usuario crea su contraseña propia al primer ingreso.",
           "2. Haz cada escenario siguiendo la guía de pruebas (Word/PDF) o la columna Pasos.",

@@ -56,6 +56,23 @@ def estilos():
 .pms-cal th {background:#f4f6f8;position:sticky;top:0}
 .pms-cal td.hab {text-align:left;background:#fafbfc;font-weight:600}
 .pms-hk {border:1px solid #e4e7eb;border-radius:10px;padding:.5rem .7rem;margin-bottom:.4rem;background:#fff}
+.pms-room {border:2px solid #cbd2d9;border-radius:12px;padding:.55rem .7rem;min-height:8rem;background:#fff;line-height:1.25}
+.pms-room .n {font-size:1.25rem;font-weight:700;color:#102a43}
+.pms-room .t {font-size:.8rem;color:#334e68}
+.pms-room .m {font-size:.78rem;color:#52606d}
+.pms-room .p {font-size:.85rem;font-weight:600;color:#102a43;margin-top:.15rem}
+.pms-room .e {font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-top:.2rem}
+.pms-room-disponible {background:#e8f7ee;border-color:#2f9e60}.pms-room-disponible .e {color:#17693c}
+.pms-room-ocupada {background:#fdeaea;border-color:#e08a8a}.pms-room-ocupada .e {color:#9b2c2c}
+.pms-room-opcion {background:#fff6d6;border-color:#e0b84a}.pms-room-opcion .e {color:#7a5b00}
+.pms-room-bloqueada {background:repeating-linear-gradient(45deg,#f4e3e3,#f4e3e3 6px,#fbf1f1 6px,#fbf1f1 12px);border-color:#b97a7a}.pms-room-bloqueada .e {color:#7f1d1d}
+.pms-room-fuera_de_servicio {background:repeating-linear-gradient(45deg,#e4e7eb,#e4e7eb 6px,#f4f6f8 6px,#f4f6f8 12px);border-color:#7b8794}.pms-room-fuera_de_servicio .e {color:#323f4b}
+.pms-room-capacidad {background:#f1f3f5;border-color:#d9dee3}.pms-room-capacidad .n,.pms-room-capacidad .t,.pms-room-capacidad .m,.pms-room-capacidad .p {color:#9aa5b1}.pms-room-capacidad .e {color:#7b8794}
+.pms-room-seleccionada {background:#dbeafe;border-color:#1a56a8;box-shadow:0 0 0 3px #1a56a833}.pms-room-seleccionada .e {color:#1a56a8}
+.pms-leyenda {display:flex;flex-wrap:wrap;gap:.9rem;font-size:.82rem;color:#334e68;margin:.3rem 0 .6rem}
+.pms-leyenda i {display:inline-block;width:.9rem;height:.9rem;border-radius:4px;border:2px solid;vertical-align:-2px;margin-right:.3rem}
+.pms-mar {background:linear-gradient(90deg,#e6f1fb,#d3e8f9,#e6f1fb);border:1px solid #b6d4ee;border-radius:8px;text-align:center;color:#1a4b7a;font-size:.78rem;letter-spacing:.35em;padding:.2rem;margin:.2rem 0 .5rem}
+.pms-pasillo {background:#f4f6f8;border:1px dashed #cbd2d9;border-radius:8px;text-align:center;color:#7b8794;font-size:.72rem;letter-spacing:.2em;padding:.1rem;margin:.5rem 0}
 div[data-testid="stMetricValue"] {font-size:1.5rem}
 </style>""", unsafe_allow_html=True)
 
