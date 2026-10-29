@@ -42,6 +42,20 @@ def _entrar(actor: dict):
     st.rerun()
 
 
+# --- sesión abierta: confirmar en cada ejecución que sigue vigente (usuario activo y contraseña sin cambios) ---
+_sesion_cerrada = False
+if "pms_actor" in st.session_state:
+    try:
+        _vigente = seguridad.refrescar_actor(st.session_state["pms_actor"])
+    except Exception as _e:
+        st.error(f"No se pudo conectar con la base de datos ({type(_e).__name__}). Revisa el secreto DATABASE_URL.")
+        st.stop()
+    if _vigente is None:
+        _cerrar_sesion()
+        _sesion_cerrada = True
+    else:
+        st.session_state["pms_actor"] = _vigente
+
 # --- recuperar sesión tras recargar (token firmado en la URL) ---
 try:
     if "pms_actor" not in st.session_state:
@@ -56,6 +70,8 @@ except Exception as _e:
 if "pms_actor" not in st.session_state:
     st.title("🏨 PMS Hotelero · Piloto")
     st.markdown(f'<div class="pms-aviso">{ui.AVISO}</div>', unsafe_allow_html=True)
+    if _sesion_cerrada:
+        st.info("Tu sesión se cerró porque tu contraseña cambió o tu usuario fue desactivado. Ingresa de nuevo.")
     c1, c2 = st.columns([1, 1])
     with c1:
         with st.form("pms_form_ingreso"):
@@ -88,6 +104,33 @@ if "pms_actor" not in st.session_state:
 
 # --- sesión iniciada ---
 A = st.session_state["pms_actor"]
+
+# --- primer ingreso / contraseña temporal: solo se muestra esta pantalla; no se construye la navegación, así que ninguna otra página es accesible ---
+if A.get("debe_cambiar_clave"):
+    st.query_params["s"] = seguridad.token_para(A)      # recargar mantiene la sesión (y esta misma pantalla)
+    st.title("🔑 Crea tu contraseña nueva")
+    st.markdown(f"Hola **{A['nombre']}**. Por seguridad, antes de usar el sistema debes crear tu propia contraseña. "
+                f"Debe tener **al menos {seguridad.MIN_CLAVE_NUEVA} caracteres** y ser distinta de la temporal que recibiste.")
+    with st.form("pms_form_clave_nueva"):
+        n1 = st.text_input("Contraseña nueva", type="password", key="pms_cn_1")
+        n2 = st.text_input("Confirma la contraseña nueva", type="password", key="pms_cn_2")
+        guardar = st.form_submit_button("Guardar y entrar", type="primary")
+    if guardar:
+        try:
+            st.session_state["pms_actor"] = seguridad.crear_clave_propia(A, n1, n2)
+        except ErrorNegocio as e:
+            st.error(str(e))
+        except Exception as e:
+            st.error(f"No se pudo guardar la contraseña ({type(e).__name__}). Intenta de nuevo.")
+        else:
+            st.session_state.pop("pms_cn_1", None)
+            st.session_state.pop("pms_cn_2", None)
+            ui.flash("Contraseña creada. ¡Bienvenido!")
+            st.rerun()
+    if st.button("Cerrar sesión", key="pms_cn_salir"):
+        _cerrar_sesion()
+        st.rerun()
+    st.stop()
 try:
     hoteles = config.hoteles_visibles(A)
 except Exception as e:

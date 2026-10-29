@@ -2,6 +2,7 @@ import streamlit as st
 
 import ui
 from pms import config, seguridad
+from pms.errores import ErrorNegocio
 
 A, H = ui.actor(), ui.hotel()
 ui.encabezado("⚙️ Configuración", "Hoteles, impuestos, tipos de habitación, habitaciones y camas, y usuarios.")
@@ -84,7 +85,8 @@ with t_hab:
 with t_u:
     us = config.usuarios(A)
     st.dataframe([{"Correo": u["email"], "Nombre": u["nombre"], "Rol": seguridad.ROL_NOMBRE[u["rol"]], "Activo": "Sí" if u["activo"] else "No",
-                   "Último acceso": u["ultimo_acceso"].strftime("%d/%m/%Y %H:%M") if u["ultimo_acceso"] else ""} for u in us],
+                   "Último acceso": u["ultimo_acceso"].strftime("%d/%m/%Y %H:%M") if u["ultimo_acceso"] else "",
+                   "Debe crear su contraseña": "Sí" if u["debe_cambiar_clave"] else "No"} for u in us],
                  hide_index=True, width="stretch")
     if EDITA:
         with st.expander("➕ Crear un usuario"):
@@ -103,5 +105,24 @@ with t_u:
                 ui.correr(config.activar_usuario, A, u["id"], not u["activo"], ok="Usuario actualizado.")
             nueva = c2.text_input("Nueva contraseña", type="password", key="pms_cf_up")
             if u and c2.button("Cambiar contraseña", key="pms_cf_upb"):
-                ui.correr(seguridad.cambiar_clave, A, u["id"], nueva, ok="Contraseña cambiada: se cerraron sus sesiones anteriores.")
+                ui.correr(seguridad.cambiar_clave, A, u["id"], nueva, ok="Contraseña cambiada: se cerraron sus sesiones anteriores y la persona deberá crear la suya al ingresar.")
+        with st.expander("🔑 Generar contraseña temporal"):
+            st.caption("Crea una contraseña aleatoria segura que se muestra **una sola vez**, cierra las sesiones anteriores de esa persona y le "
+                       "exige crear la suya al ingresar. Entrégala por un canal privado; no se guarda en claro en ningún lugar.")
+            for u in us:
+                c1, c2 = st.columns([3, 2])
+                c1.markdown(f"{u['email']} · {seguridad.ROL_NOMBRE[u['rol']]}")
+                if u["id"] == A["id"]:
+                    c2.caption("(tu propio usuario)")
+                    continue
+                if c2.button("Generar contraseña temporal", key=f"pms_cf_tmp_{u['id']}"):
+                    try:
+                        temporal = seguridad.generar_clave_temporal(A, u["id"])
+                    except ErrorNegocio as e:
+                        st.error(str(e))
+                    except Exception as e:
+                        st.error(f"No se pudo generar la contraseña ({type(e).__name__}).")
+                    else:
+                        st.warning(f"Contraseña temporal de {u['email']}: cópiala ahora, no se volverá a mostrar.")
+                        st.code(temporal, language=None)
     st.caption("Las contraseñas se guardan cifradas (bcrypt); nadie, ni el administrador, puede verlas.")

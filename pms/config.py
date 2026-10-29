@@ -155,7 +155,7 @@ def camas(hotel_id: int) -> list[dict]:
 # ---------- usuarios ----------
 def usuarios(actor) -> list[dict]:
     seguridad.exigir(actor, "configuracion", editar=False)
-    q = "select id, hotel_id, email, nombre, rol, activo, ultimo_acceso from pms_usuarios"
+    q = "select id, hotel_id, email, nombre, rol, activo, ultimo_acceso, debe_cambiar_clave from pms_usuarios"
     if actor.get("hotel_id") is not None:
         return db.todos(q + " where hotel_id=%s order by rol, email", (actor["hotel_id"],))
     return db.todos(q + " order by hotel_id nulls first, rol, email")

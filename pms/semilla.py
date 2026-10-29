@@ -104,6 +104,8 @@ def sembrar(reiniciar: bool = False, guardar_claves: bool = True) -> dict:
         _tarifas(admin, hid, h, tipo_id, hoy_hotel(None, hid))
     for h in HOTELES:
         _movimiento(ids[h["slug"]], h, rng)
+    with db.tx() as cx:        # cada persona crea su propia contraseña en el primer ingreso
+        cx.execute("update pms_usuarios set debe_cambiar_clave=true")
     if guardar_claves and not dadas:
         SALIDA_CLAVES.parent.mkdir(parents=True, exist_ok=True)
         SALIDA_CLAVES.write_text("# Usuarios de PRUEBA del PMS (datos ficticios). NO subir a Git.\n" + "\n".join(

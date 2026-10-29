@@ -73,7 +73,10 @@ def chip(texto: str, estado: str, paleta: dict | None = None) -> str:
 
 # ---------- sesión ----------
 def actor() -> dict:
-    return st.session_state["pms_actor"]
+    a = st.session_state["pms_actor"]
+    if a.get("debe_cambiar_clave"):        # defensa extra: ninguna página trabaja mientras falte crear la contraseña propia
+        st.stop()
+    return a
 
 
 def hotel() -> dict:

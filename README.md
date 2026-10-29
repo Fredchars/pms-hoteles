@@ -44,8 +44,13 @@ Pruebas: `PMS_TEST_PG_URL=postgresql://.../pms_test python -m pytest` (se niegan
 
 Ejemplo en `.streamlit/secrets.toml.example`. **Nunca subir `secrets.toml`, `.env` ni claves.**
 
+## Primer ingreso y contraseñas temporales
+- Cada usuario tiene la bandera `debe_cambiar_clave` (tabla `pms_usuarios`). Si está activa, tras iniciar sesión la app muestra **solo** la pantalla «Crea tu contraseña nueva» (mínimo 10 caracteres, con confirmación y distinta de la temporal); ninguna otra página está disponible hasta guardarla. Al guardar se baja la bandera, se audita (`cambio_clave`, `clave_inicial_creada`) y la persona entra.
+- En **Configuración → Usuarios → Generar contraseña temporal** (solo administrador) se crea una contraseña aleatoria segura que se muestra **una sola vez**, se activa la bandera, se cierran las sesiones anteriores de esa persona y se audita (`clave_temporal`) sin guardar la clave en claro. Si el administrador cambia la contraseña de otra persona con «Cambiar contraseña», esa persona también debe crear la suya.
+- La semilla de datos ficticios deja a todos los usuarios con la bandera activa. Para marcar a los usuarios ya existentes en Supabase: workflow **Preparar y verificar Supabase (PMS)** con la opción `marcar_cambio_clave` (ejecuta `scripts/marcar_cambio_clave.py`; opcionalmente reemplaza la contraseña del administrador con el hash del secreto `PMS_ADMIN_HASH`, sin pasar claves en claro).
+
 ## Base de datos (Supabase)
-Solo tablas con prefijo `pms_` en el proyecto compartido. El workflow **Preparar y verificar Supabase (PMS)** las crea con RLS, siembra los datos ficticios y verifica que la API pública no devuelve nada y que las tablas de otros proyectos no se tocan. Se ejecuta a mano desde la pestaña Actions.
+Solo tablas con prefijo `pms_` en el proyecto compartido. El workflow **Preparar y verificar Supabase (PMS)** las crea con RLS, siembra los datos ficticios y verifica que la API pública no devuelve nada y que las tablas de otros proyectos no se tocan. Se ejecuta a mano desde la pestaña Actions. La migración de la columna `debe_cambiar_clave` es idempotente (`alter table … add column if not exists` en `db/01_esquema_pms.sql`) y se aplica con ese mismo workflow.
 
 ## Respaldo
 El workflow **Respaldo semanal** (domingos) vuelca las tablas `pms_*`, las cifra con AES-256 (secreto `BACKUP_PASSPHRASE`) y guarda el archivo 30 días como artefacto. Instrucciones de restauración dentro del archivo `LEEME.txt` del respaldo.

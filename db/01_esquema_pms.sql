@@ -31,8 +31,11 @@ create table if not exists pms_usuarios (
   clave_hash text not null,
   activo boolean not null default true,
   creado timestamptz not null default now(),
-  ultimo_acceso timestamptz
+  ultimo_acceso timestamptz,
+  debe_cambiar_clave boolean not null default false     -- true = en el próximo ingreso debe crear su propia contraseña
 );
+-- Migración idempotente (bases creadas antes de esta columna): se puede ejecutar cuantas veces se quiera.
+alter table pms_usuarios add column if not exists debe_cambiar_clave boolean not null default false;
 
 create table if not exists pms_tipos_habitacion (
   id bigserial primary key,

@@ -14,7 +14,7 @@
    ```
    ATm Consulting tiene ese bloque ya preparado en un archivo seguro (no está en el repositorio ni en Drive).
 5. Pulsa **Deploy**. Al terminar, abre la URL y prueba el ingreso con un usuario de prueba.
-6. La base ya está lista en Supabase (tablas `pms_*` con datos ficticios). Los usuarios de prueba y sus contraseñas se entregan aparte.
+6. La base ya está lista en Supabase (tablas `pms_*` con datos ficticios). Los usuarios de prueba están marcados para **crear su propia contraseña en el primer ingreso** (la app lo pide sola); el administrador puede generar una contraseña temporal nueva para cualquier usuario en Configuración → Usuarios. Tras una actualización de la base (p. ej. la columna `debe_cambiar_clave`), ejecuta el workflow «Preparar y verificar Supabase (PMS)» en Actions antes de usar la versión nueva de la app.
 7. Si la app «se duerme» por falta de uso (plan gratuito), se despierta con un clic.
 
 **Importante:** en producción `PMS_MODO_DEMO` debe ser `no` (y `PMS_ENTORNO=produccion` lo fuerza). Los datos son ficticios; no cargar datos reales de huéspedes en el piloto.

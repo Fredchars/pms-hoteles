@@ -47,6 +47,10 @@ def main():
         n = cx.execute("select count(*) n from pms_usuarios").fetchone()["n"]
         malos = cx.execute("select count(*) n from pms_usuarios where clave_hash not like '$2%%'").fetchone()["n"]
         ok(n > 0 and malos == 0, f"{n} usuarios, todos con contraseña en hash bcrypt")
+        col = cx.execute("select 1 from information_schema.columns where table_name='pms_usuarios' and column_name='debe_cambiar_clave'").fetchone()
+        ok(col is not None, "pms_usuarios tiene la columna debe_cambiar_clave")
+        if col:
+            print(f"     usuarios que deben crear su contraseña: {cx.execute('select count(*) n from pms_usuarios where debe_cambiar_clave').fetchone()['n']}")
         print(f"     hoteles: {cx.execute('select count(*) n from pms_hoteles').fetchone()['n']} · reservas: "
               f"{cx.execute('select count(*) n from pms_reservas').fetchone()['n']}")
         dobles = cx.execute("select count(*) n from (select habitacion_id, noche from pms_reserva_noches where activa "

@@ -9,6 +9,10 @@ on:
         description: "Borrar y volver a sembrar los datos ficticios (solo tablas pms_)"
         type: boolean
         default: false
+      marcar_cambio_clave:
+        description: "Marcar a todos los usuarios para que creen su propia contraseña al primer ingreso (y aplicar PMS_ADMIN_HASH si existe)"
+        type: boolean
+        default: false
       solo_verificar:
         description: "Solo verificar (no cambia nada)"
         type: boolean
@@ -33,6 +37,7 @@ jobs:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       PMS_SEED_CLAVES: ${{ secrets.PMS_SEED_CLAVES }}
+      PMS_ADMIN_HASH: ${{ secrets.PMS_ADMIN_HASH }}
       PMS_RESEMBRAR: ${{ inputs.resembrar && 'si' || '' }}
     steps:
       - uses: actions/checkout@v4
@@ -46,5 +51,8 @@ jobs:
       - name: Crear tablas pms_* + RLS y sembrar datos ficticios
         if: ${{ !inputs.solo_verificar }}
         run: python scripts/setup_supabase.py
+      - name: Marcar a todos los usuarios para crear su contraseña al primer ingreso
+        if: ${{ inputs.marcar_cambio_clave }}
+        run: python scripts/marcar_cambio_clave.py
       - name: Verificar (tablas, RLS, API REST pública, otros proyectos intactos)
         run: python scripts/verificar_supabase.py
