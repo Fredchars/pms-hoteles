@@ -144,10 +144,14 @@ css=REF.read_text()+'''
 .cta h2{color:var(--navy)}.sp{background:var(--bg);border-color:var(--line);color:var(--ink)}.sp b{color:var(--navy)}.ctabox{box-shadow:0 10px 30px rgba(20,48,79,.15);border:1px solid var(--line)}
 html,body{background:#eef1f5}.duo figure.shot img{max-height:350px;object-fit:cover;object-position:left top}.tline{grid-template-columns:repeat(3,1fr)}
 '''
-out=[]
-for i,s in enumerate(slides,1):
-    cls="cover" if i==1 else ("cta" if i==N else "")
-    out.append(f'<section class="slide {cls}" data-n="{i}">{s}<div class="ft"><span>Powered by ATm · Prototipo diseñado para ATm Consulting</span><span>{TIT}</span><span>{i} / {N}</span></div></section>')
-js=pathlib.Path(__file__).with_name("navegacion.js").read_text()
-html=f'<!doctype html><html lang="es-CO"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{TIT}</title><style>{css}</style></head><body><div id="bar"></div><div id="deck"><div id="stage">{"".join(out)}</div></div><div id="nav"><button onclick="go(i-1)" aria-label="Anterior">‹</button><span id="cnt"></span><button onclick="go(i+1)" aria-label="Siguiente">›</button></div><script>{js}</script></body></html>'
-o=pathlib.Path(__file__).with_name("uso-pantallas-por-actor-pms.html"); o.write_text(html); print(o, N, len(html)//1024, "KB")
+def emitir(sl, nombre):
+    N=len(sl); out=[]
+    for i,s in enumerate(sl,1):
+        cls="cover" if i==1 else ("cta" if i==N else "")
+        out.append(f'<section class="slide {cls}" data-n="{i}">{s}<div class="ft"><span>Powered by ATm · Prototipo diseñado para ATm Consulting</span><span>{TIT}</span><span>{i} / {N}</span></div></section>')
+    js=pathlib.Path(__file__).with_name("navegacion.js").read_text()
+    html=f'<!doctype html><html lang="es-CO"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{TIT}</title><style>{css}</style></head><body><div id="bar"></div><div id="deck"><div id="stage">{"".join(out)}</div></div><div id="nav"><button onclick="go(i-1)" aria-label="Anterior">‹</button><span id="cnt"></span><button onclick="go(i+1)" aria-label="Siguiente">›</button></div><script>{js}</script></body></html>'
+    o=pathlib.Path(__file__).with_name(nombre); o.write_text(html); print(o, N, len(html)//1024, "KB")
+emitir(slides, "uso-pantallas-por-actor-pms.html")
+# versión corta: portada, actores, matriz, recepción (plano), gerencia (aprobaciones), cliente web (pago), recorrido, cómo entrar
+emitir([slides[k-1] for k in (1,2,3,6,9,15,18,20)], "uso-pantallas-por-actor-pms-corta.html")
