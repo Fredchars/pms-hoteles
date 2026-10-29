@@ -12,10 +12,12 @@ D["estancia"] = diagrama("flujo_estancia", ["Confirmada", "Check-in\n(día de ll
 D["cancelar"] = diagrama("flujo_cancelacion", ["Recepción\nsolicita", "Queda\n«pendiente»", "Otra persona de\ngerencia revisa", "Aprueba\no rechaza", "Auditoría\nlo registra"], colores={2: NA, 3: VE}, cols=5, alto=1.3, ancho=11)
 D["limpieza"] = diagrama("flujo_limpieza", ["Sucia", "En limpieza", "En inspección", "Lista"], colores={0: NA, 3: VE}, cols=4, alto=1.2, ancho=10)
 D["descuento"] = diagrama("flujo_descuento", ["Recepción pide\ndescuento (%)", "Pendiente:\nno cuenta aún", "Gerencia (otra\npersona) decide", "Aprobado: baja\nel total"], colores={1: NA, 3: VE}, cols=4, alto=1.3, ancho=10)
+D["primer"] = diagrama("flujo_primer_ingreso", ["Ingresas con tu\ncorreo y la clave\ntemporal", "Aparece solo\n«Crea tu contraseña\nnueva»", "Escribes la nueva\ny la confirmas", "Guardas y\nentras al\nsistema"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
+D["temporal"] = diagrama("flujo_clave_temporal", ["Administrador\npulsa «Generar\ncontraseña temporal»", "Se muestra\nUNA sola vez", "La entregas\npor un canal\nprivado", "La persona crea\nsu contraseña\nal ingresar"], colores={1: NA, 3: VE}, cols=4, alto=1.4, ancho=11)
 D["admin"] = diagrama("flujo_admin", ["Crear hotel\n(país y moneda)", "Impuestos\n(nombre y %)", "Tipos de\nhabitación", "Habitaciones\ny camas", "Usuarios\ny roles"], cols=5, alto=1.3, ancho=11)
 
 d = nuevo_documento("Instructivo por rol", "PMS hotelero (piloto) · recepción, gerencia, housekeeping y administrador")
-parrafo(d, "Versión 1.0 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.1 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todos los datos del piloto son ficticios (hoteles, huéspedes, reservas, pagos). Los correos de confirmación, los pagos y las conexiones "
         "con otras plataformas están simulados: la pantalla siempre lo avisa. El comprobante PDF NO es una factura legal.", "Importante")
 salto(d)
@@ -24,11 +26,29 @@ d.add_heading(lim("Cómo usar este instructivo"), 1)
 parrafo(d, "Cada capítulo explica, con pasos cortos, lo que puede hacer una persona según su rol. Busca el tuyo y sigue los pasos. "
            "Los cuadros amarillos son avisos importantes.")
 d.add_heading(lim("Entrar a la aplicación"), 2)
-lista(d, ["Abre el enlace de la aplicación que te entregó ATm Consulting.",
-          "Escribe tu correo y tu contraseña y pulsa «Ingresar». Tus datos de acceso te los entrega ATm Consulting aparte; no los compartas.",
+lista(d, ["Abre https://pms-hoteles-atm.streamlit.app/ (si la app estuvo un rato sin uso, puede tardar unos segundos en despertar; pulsa el botón que aparezca).",
+          "Escribe tu correo y la contraseña TEMPORAL que te entregó ATm Consulting y pulsa «Entrar». Los datos de acceso se entregan aparte; no los compartas.",
+          "La primera vez, el sistema te pide crear tu propia contraseña (ver «Primer ingreso» más abajo). Desde la segunda vez entras con la contraseña que tú creaste.",
           "Si te equivocas 5 veces seguidas, el acceso se bloquea 15 minutos. Es una medida de seguridad.",
           "Tu sesión dura 8 horas. Si recargas la página (F5) no te saca. Para salir, usa «Cerrar sesión» en el menú de la izquierda.",
           "Si trabajas en varios hoteles, elige el hotel en el menú de la izquierda. Cada hotel muestra sus precios en su moneda."], numerada=True)
+imagen(d, CAPT / "00_ingreso.png", 14, "Pantalla de ingreso (datos ficticios)")
+d.add_heading(lim("Primer ingreso: crea tu contraseña nueva"), 2)
+parrafo(d, "La contraseña temporal sirve solo para entrar la primera vez. Al ingresar con ella, la aplicación muestra únicamente la pantalla "
+           "«Crea tu contraseña nueva»: no puedes abrir ninguna otra pantalla hasta terminar este paso.")
+imagen(d, D["primer"], 15)
+lista(d, ["Escribe tu contraseña nueva en «Contraseña nueva». Debe tener al menos 10 caracteres y ser distinta de la temporal.",
+          "Vuelve a escribirla en «Confirma la contraseña nueva». Las dos deben ser iguales.",
+          "Pulsa «Guardar y entrar». Entras al sistema y la temporal deja de servir.",
+          "Si algo no cumple, un aviso rojo te dice qué corregir (por ejemplo, «La contraseña nueva debe tener al menos 10 caracteres») y no se guarda nada."], numerada=True)
+imagen(d, CAPT / "clave_nueva.png", 15, "Pantalla «Crea tu contraseña nueva» (usuario ficticio)")
+imagen(d, CAPT / "clave_nueva_error.png", 15, "Aviso cuando la contraseña es muy corta")
+nota(d, "Si recargas la página (F5) o cierras y vuelves a abrir con la misma sesión antes de guardar, sigues viendo «Crea tu contraseña nueva»: "
+        "el bloqueo se mantiene hasta que la crees. Si pulsas «Cerrar sesión» sin guardar, la temporal sigue valiendo para el próximo ingreso. "
+        "Elige una contraseña que solo tú conozcas y no la reutilices de otros sistemas.", "Ojo")
+d.add_heading(lim("Si olvidaste tu contraseña"), 2)
+parrafo(d, "Pide al administrador que te genere una contraseña temporal nueva (capítulo 4). Con ella ingresas y creas otra propia. "
+           "Al generarla, las sesiones que tuvieras abiertas se cierran solas.")
 d.add_heading(lim("Qué ve cada rol"), 2)
 tabla(d, ["Pantalla", "Recepción", "Gerencia", "Housekeeping", "Administrador"], [
     ["Dashboard del día", "Usa", "Usa", "—", "Ver"], ["Calendario", "Usa", "Usa", "—", "Ver"],
@@ -135,8 +155,19 @@ tabla(d, ["Pestaña", "Para qué sirve"], [
     ["🧮 Impuestos", "Cada hotel tiene sus propios impuestos: nombre y porcentaje. Son genéricos, no se asume la norma de un país."],
     ["🛏️ Tipos de habitación", "Nombre, capacidad y descripción (Familiar, Triple, Doble, Individual…)."],
     ["🚪 Habitaciones y camas", "Cada habitación con su planta, tipo, vista y camas. El piloto trae una distribución de prueba provisional de 18 habitaciones (3 plantas × 6)."],
-    ["👤 Usuarios", "Crear usuarios, asignarles rol y hotel, cambiar contraseña o desactivarlos."]], anchos=[4.5, 12])
-d.add_heading(lim("4.2 Otras tareas"), 2)
+    ["👤 Usuarios", "Crear usuarios, asignarles rol y hotel, cambiar contraseña, generar una contraseña temporal o desactivarlos. La tabla indica quién todavía debe crear su contraseña."]], anchos=[4.5, 12])
+d.add_heading(lim("4.2 Generar una contraseña temporal"), 2)
+parrafo(d, "Sirve cuando alguien olvidó su contraseña o cuando creas a una persona nueva. Está en «Configuración» → pestaña «Usuarios» → «Generar contraseña temporal».")
+imagen(d, D["temporal"], 15)
+lista(d, ["Busca a la persona en la lista y pulsa «Generar contraseña temporal» junto a su correo.",
+          "El sistema crea una contraseña aleatoria segura y la muestra UNA sola vez en pantalla. Cópiala en ese momento: no se vuelve a mostrar ni se guarda en claro en ningún lugar.",
+          "Entrégala a la persona por un canal privado (no por un grupo de chat ni en un correo abierto).",
+          "Desde ese momento: se cierran las sesiones anteriores de esa persona y, al ingresar, solo verá «Crea tu contraseña nueva». La tabla de usuarios muestra «Sí» en «Debe crear su contraseña» hasta que lo haga.",
+          "La acción queda en Auditoría (quién la generó y para quién), sin la contraseña.",
+          "No puedes generarte una contraseña temporal a ti mismo: usa «Activar, desactivar o cambiar contraseña». Si cambias la contraseña de otra persona con esa opción, ella también deberá crear la suya al ingresar."], numerada=True)
+imagen(d, CAPT / "admin_clave_temporal.png", 15.5, "Configuración → Usuarios → Generar contraseña temporal (usuarios ficticios; aquí aún no se ha generado ninguna)")
+nota(d, "Si pulsas otro botón o recargas la página, la contraseña temporal ya no se muestra. Si la perdiste antes de entregarla, genera otra.")
+d.add_heading(lim("4.3 Otras tareas"), 2)
 lista(d, ["Bloqueos y tarifas: igual que gerencia (ver capítulo 2).", "Reportes: igual que gerencia.",
           "Auditoría: consultar quién hizo qué.", "Dashboard, calendario, reservas, huéspedes y facturación: solo consulta."])
 nota(d, "Los cambios de impuestos solo afectan a las líneas nuevas: las ya cobradas conservan el porcentaje con el que se cobraron.")
@@ -147,6 +178,8 @@ d.add_heading(lim("Preguntas frecuentes"), 1)
 tabla(d, ["Pregunta", "Respuesta"], [
     ["No me deja guardar la reserva.", "Lee el mensaje rojo: puede que no haya habitación libre, que las fechas estén mal o que falte el consentimiento del huésped."],
     ["No veo una pantalla que mi compañero sí ve.", "El menú depende del rol. Es normal."],
+    ["Olvidé mi contraseña.", "Pide al administrador una contraseña temporal nueva. Ingresas con ella y creas otra propia."],
+    ["Me pide «Crea tu contraseña nueva» y no me deja avanzar.", "Es lo esperado en el primer ingreso o tras recibir una temporal nueva: crea la contraseña (mínimo 10 caracteres, distinta de la temporal). Hasta entonces no se abre ninguna otra pantalla."],
     ["Me bloquearon el acceso.", "Fueron 5 intentos fallidos. Espera 15 minutos o pídele al administrador que revise tu usuario."],
     ["¿El correo de confirmación sale de verdad?", "No. Es una simulación y la pantalla lo avisa."],
     ["¿Puedo usar el comprobante como factura?", "No. Es solo un comprobante de cuenta del piloto."],

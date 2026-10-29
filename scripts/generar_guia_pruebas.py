@@ -13,14 +13,14 @@ U = {"rec": "recepcion1.col@pms-demo.test", "rec2": "recepcion2.col@pms-demo.tes
 # (id, grupo, título, usuario, pasos, esperado)
 E = [
  ("E01", "Acceso", "Ingreso correcto y contraseña mala", U["rec"],
-  ["Abre la aplicación.", "Escribe un correo válido con una contraseña equivocada y pulsa Ingresar.", "Ingresa con la contraseña correcta."],
-  "Con la contraseña mala sale un mensaje claro y no entra. Con la correcta entra y ve el menú de recepción."),
+  ["Abre https://pms-hoteles-atm.streamlit.app/.", "Escribe un correo válido con una contraseña equivocada y pulsa Entrar.", "Ingresa con la contraseña temporal correcta (si ya creaste la tuya, usa la tuya; el primer ingreso se prueba en E33)."],
+  "Con la contraseña mala sale un mensaje claro y no entra. Con la correcta entra (si es la temporal, primero pide crear la contraseña nueva; ya creada, ve el menú de recepción)."),
  ("E02", "Acceso", "Bloqueo por intentos fallidos", U["hk2"],
   ["Falla la contraseña 5 veces seguidas.", "Intenta entrar con la contraseña correcta."],
   "Después del 5.º fallo avisa que el acceso está bloqueado unos minutos, aunque la contraseña sea correcta. Queda en Auditoría (ingresar como gerencia para verlo)."),
  ("E03", "Acceso", "La sesión sobrevive a recargar la página", U["rec"],
   ["Ingresa.", "Pulsa F5 (recargar).", "Cambia de pantalla varias veces y recarga otra vez."],
-  "No pide ingresar de nuevo. Sigue en la misma pantalla y en el mismo hotel."),
+  "No pide ingresar de nuevo. Sigue en la misma pantalla y en el mismo hotel. (Si aún no has creado tu contraseña, recargar te mantiene en «Crea tu contraseña nueva»: ver E37.)"),
  ("E04", "Acceso", "Sin acceso de demostración abierto", "—",
   ["Mira la pantalla de ingreso de la dirección de producción."],
   "No aparecen botones de «entrar sin contraseña». Solo correo y contraseña."),
@@ -98,7 +98,7 @@ E = [
   "El hotel nuevo aparece en el selector, con su moneda. La habitación se puede reservar."),
  ("E29", "Administración", "Usuarios", U["adm"],
   ["Crea un usuario de recepción.", "Desactívalo e intenta ingresar con él.", "Cambia su contraseña."],
-  "El usuario desactivado no entra. La contraseña nueva funciona. Nunca se muestra ninguna contraseña guardada."),
+  "El usuario desactivado no entra. La contraseña nueva funciona, y esa persona deberá crear la suya al ingresar. Nunca se muestra ninguna contraseña guardada."),
  ("E30", "Seguridad", "Auditoría", U["ger1"],
   ["Haz varias acciones (reserva, cancelación, descuento).", "Abre Auditoría."],
   "Cada acción aparece con quién, cuándo y qué. No hay botones para editar ni borrar."),
@@ -108,15 +108,38 @@ E = [
  ("E32", "Aspecto", "Fondo blanco y uso en pantalla pequeña", U["rec"],
   ["Mira varias pantallas en computador.", "Repite en el celular o con la ventana angosta."],
   "Fondo blanco y limpio, textos legibles, sin elementos cortados."),
+ ("E33", "Primer ingreso", "Primer ingreso correcto: crear la contraseña propia", U["rec2"],
+  ["Ingresa con el correo y la contraseña temporal que te entregaron y pulsa Entrar.", "Comprueba que solo aparece «Crea tu contraseña nueva» y que no hay menú de pantallas.",
+   "Escribe una contraseña nueva de 10 o más caracteres, distinta de la temporal, y repítela en la confirmación.", "Pulsa «Guardar y entrar».", "Pulsa «Cerrar sesión» e ingresa con la contraseña nueva. Intenta ingresar con la temporal."],
+  "Tras guardar, entra al sistema y ve el menú de su rol. Con la contraseña nueva entra directo, sin volver a pedir crear otra. La temporal ya no funciona. En Auditoría (gerencia) aparece el cambio de contraseña, sin mostrar contraseñas."),
+ ("E34", "Primer ingreso", "Contraseña corta o confirmación distinta: rechazada", U["hk2"],
+  ["Ingresa con la contraseña temporal para llegar a «Crea tu contraseña nueva».", "Escribe una contraseña de menos de 10 caracteres (por ejemplo 6) en los dos campos y pulsa «Guardar y entrar».",
+   "Escribe una contraseña válida en el primer campo y otra distinta en la confirmación; pulsa «Guardar y entrar»."],
+  "En ambos casos aparece un aviso rojo claro («al menos 10 caracteres» / «la confirmación no coincide»), no se guarda nada y se sigue viendo solo la pantalla de contraseña nueva."),
+ ("E35", "Primer ingreso", "Contraseña igual a la temporal: rechazada", U["ger2"],
+  ["Ingresa con la contraseña temporal.", "En «Crea tu contraseña nueva» escribe la misma contraseña temporal en los dos campos (debe tener 10 o más caracteres) y pulsa «Guardar y entrar»."],
+  "Aparece el aviso «La contraseña nueva no puede ser igual a la temporal», no se guarda nada y la persona sigue en la misma pantalla."),
+ ("E36", "Primer ingreso", "Otras pantallas bloqueadas antes de crear la contraseña", U["hk1"],
+  ["Ingresa con la contraseña temporal (sin crear aún la nueva).", "Mira el lado izquierdo: no debe haber menú de pantallas.",
+   "Intenta abrir a mano las direcciones de otras pantallas (por ejemplo, la dirección de la aplicación terminada en /housekeeping o /reservas)."],
+  "Solo se ve «Crea tu contraseña nueva» (y el botón Cerrar sesión). Ninguna otra pantalla, dato ni precio es accesible hasta guardar la contraseña nueva."),
+ ("E37", "Primer ingreso", "Recargar antes de crear la contraseña", U["rec"],
+  ["Ingresa con la contraseña temporal y llega a «Crea tu contraseña nueva».", "Pulsa F5 (recargar).", "Crea la contraseña nueva y pulsa «Guardar y entrar», luego recarga otra vez."],
+  "Tras la primera recarga sigue en «Crea tu contraseña nueva» sin pedir ingresar de nuevo y sin dar acceso al sistema. Después de guardar, la recarga mantiene la sesión normal."),
+ ("E38", "Primer ingreso", "Administrador genera una contraseña temporal y la sesión anterior se cierra", f"{U['adm']} y {U['rec2']}",
+  ["Con recepción 2 ya con contraseña propia, deja su sesión abierta en un navegador.", "Con el administrador: Configuración → Usuarios → Generar contraseña temporal junto a recepcion2.col. Copia la contraseña que aparece.",
+   "Pulsa otro botón o recarga la página del administrador.", "En el navegador de recepción 2, pulsa cualquier opción o recarga.", "Ingresa como recepción 2 con la temporal y crea una contraseña nueva."],
+  "La contraseña temporal se muestra una sola vez y desaparece al recargar o pulsar otro botón. La tabla de usuarios marca «Sí» en «Debe crear su contraseña». La sesión anterior de recepción 2 se cierra y vuelve a la pantalla de ingreso. Con la temporal pide crear la contraseña nueva. En Auditoría queda quién la generó y para quién, sin la contraseña. El administrador no puede generarla para sí mismo."),
 ]
+
 
 # ---------- Word ----------
 d = nuevo_documento("Guía de pruebas por escenarios", "PMS hotelero (piloto) · qué probar, cómo y qué debe pasar")
-parrafo(d, "Versión 1.0 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
+parrafo(d, "Versión 1.1 · 28 de octubre de 2026 · Preparado para ATm Consulting, Colombia", color=GRIS, tam=10)
 nota(d, "Todo es ficticio y las confirmaciones, los pagos y las integraciones están simuladas. Marca los resultados en el archivo Excel «checklist-pruebas-pms.xlsx».", "Importante")
 salto(d)
 d.add_heading("Cómo probar", 1)
-lista(d, ["Pide a ATm Consulting el enlace de la aplicación y las contraseñas de los usuarios de prueba (se entregan aparte).",
+lista(d, ["La aplicación está en https://pms-hoteles-atm.streamlit.app/. Pide a ATm Consulting las contraseñas TEMPORALES de los usuarios de prueba (se entregan aparte; no están escritas en este documento). Cada persona crea su propia contraseña (mínimo 10 caracteres) la primera vez que ingresa: se prueba en los escenarios E33 a E38. Los escenarios E34 a E37 necesitan un usuario que todavía tenga su contraseña temporal; si ya creó la suya, pide al administrador que le genere otra temporal (escenario E38).",
           "Hay 3 hoteles ficticios: Colombia (COP), República Dominicana (DOP) y otro país (PEN). Cada uno tiene 18 habitaciones y usuarios de recepción, gerencia y housekeeping.",
           "Los correos de los usuarios tienen esta forma: recepcion1.col@pms-demo.test, gerencia2.rd@pms-demo.test, housekeeping1.pe@pms-demo.test. El administrador es admin@pms-demo.test.",
           "Haz los escenarios en orden. Para cada uno, marca en el Excel «Pasó», «Falló» o «No aplica» y escribe lo que viste si falló.",
@@ -176,7 +199,7 @@ for k in ("Pendiente", "Pasó", "Falló", "No aplica"):
 res.append(["Total", f"=COUNTA(Checklist!A4:A{n})"]); res.append(["% que pasó", f'=IFERROR(COUNTIF(Checklist!G4:G{n},"Pasó")/(COUNTA(Checklist!A4:A{n})-COUNTIF(Checklist!G4:G{n},"No aplica")),0)'])
 res["B9"].number_format = "0%"; res.column_dimensions["A"].width = 18
 lee = wb.create_sheet("Cómo usar")
-for l in ["1. Pide a ATm Consulting el enlace y las contraseñas de prueba (se entregan aparte).",
+for l in ["1. Abre https://pms-hoteles-atm.streamlit.app/ y pide a ATm Consulting las contraseñas temporales de prueba (se entregan aparte). Cada usuario crea su contraseña propia al primer ingreso.",
           "2. Haz cada escenario siguiendo la guía de pruebas (Word/PDF) o la columna Pasos.",
           "3. En la columna Resultado elige Pasó, Falló o No aplica.",
           "4. Si falló, escribe en Observaciones qué viste. Anota fecha y tu nombre.",

@@ -12,3 +12,5 @@ Actualizado el 28 oct 2026.
 - [x] 9 Corrección (29 oct 2026): tras un push, Streamlit Cloud dejaba en memoria el `pms/*.py` viejo (sin reiniciar) y el ingreso mostraba «No se pudo conectar con la base de datos (AttributeError)». Ahora `Inicio.py` recarga `pms/` si cambió, y los errores se clasifican: conexión vs «Error inesperado (Tipo)» con traceback en los registros. Prueba de regresión en `tests/test_modulos_y_errores.py`.
 ## Bloqueos
 - (ninguno; app desplegada en https://pms-hoteles-atm.streamlit.app/)
+
+10. **Documentación del primer ingreso** (v1.1): instructivo y guía de pruebas actualizados (ingreso con contraseña temporal, «Crea tu contraseña nueva», «Generar contraseña temporal», escenarios E33–E38 y checklist). Capturas con datos ficticios en base local: `scripts/capturas_primer_ingreso.py`.

@@ -111,7 +111,7 @@ with t_u:
                        "exige crear la suya al ingresar. Entrégala por un canal privado; no se guarda en claro en ningún lugar.")
             for u in us:
                 c1, c2 = st.columns([3, 2])
-                c1.markdown(f"{u['email']} · {seguridad.ROL_NOMBRE[u['rol']]}")
+                c1.markdown(f"`{u['email']}` · {seguridad.ROL_NOMBRE[u['rol']]}")
                 if u["id"] == A["id"]:
                     c2.caption("(tu propio usuario)")
                     continue
