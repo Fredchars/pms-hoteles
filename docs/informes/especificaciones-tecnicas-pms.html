@@ -1,0 +1,371 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PMS Hotelero · Piloto — Especificaciones técnicas</title><style>body{font-family:Calibri,Arial,sans-serif;max-width:960px;margin:2em auto;padding:0 1em;background:#fff;color:#222;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #bbb;padding:5px 8px;vertical-align:top;font-size:.9em}th{background:#eef2f7}
+img{max-width:100%;height:auto;border:1px solid #e3e8ef;margin:.5em 0}h1,h2,h3{color:#1f3a5f}h2{border-bottom:2px solid #1f3a5f;padding-bottom:.2em}
+pre{background:#f6f8fa;padding:.8em;overflow-x:auto;font-size:.85em}code{background:#f6f8fa;padding:0 .2em}blockquote{border-left:4px solid #e0a800;background:#fffbea;margin:1em 0;padding:.4em 1em}
+header,footer{color:#666;font-size:.85em}header{border-bottom:1px solid #ddd;margin-bottom:1em}footer{border-top:1px solid #ddd;margin-top:2em;padding-top:.5em}
+@media print{body{max-width:none;margin:0}h2{page-break-after:avoid}img{page-break-inside:avoid}}</style></head><body><header>Prototipo diseñado para ATm Consulting · PMS Hotelero Piloto</header><h1 id="pms-hotelero-piloto-especificaciones-tecnicas">PMS Hotelero · Piloto — Especificaciones técnicas</h1>
+<p><em>Prototipo diseñado para ATm Consulting · versión 1.0 · 29 de octubre de 2026 · todos los datos son ficticios</em></p>
+<h2 id="1-resumen">1. Resumen</h2>
+<p>El PMS Hotelero Piloto es un sistema de gestión hotelera multi-país (Colombia/COP, República Dominicana/DOP y un tercer país genérico) con impuestos configurables, 4 roles, reservas sin doble venta, check-in/check-out, housekeeping, bloqueos, facturación simple con comprobante PDF (no es factura legal), reportes, auditoría inmodificable, <strong>plano de habitaciones</strong> y una <strong>mini web pública de reservas</strong> con pasarela y correo simulados.</p>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App interna</td>
+<td>https://pms-hoteles-atm.streamlit.app/ (<code>app/Inicio.py</code>)</td>
+</tr>
+<tr>
+<td>Mini web de reservas</td>
+<td>https://pms-reservas-atm.streamlit.app/ (<code>reserva_web/Reservas.py</code>)</td>
+</tr>
+<tr>
+<td>Código</td>
+<td>https://github.com/Fredchars/pms-hoteles (público, rama <code>main</code>)</td>
+</tr>
+<tr>
+<td>Base de datos</td>
+<td>Supabase Free, proyecto <em>atlas-selleragent</em>, 21 tablas con prefijo <code>pms_</code> y RLS</td>
+</tr>
+<tr>
+<td>Pruebas</td>
+<td>133 pruebas automáticas (pytest) en 16 archivos</td>
+</tr>
+<tr>
+<td>Datos semilla</td>
+<td>3 hoteles × 18 habitaciones (3 plantas × 6), 19 usuarios de prueba</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-arquitectura">2. Arquitectura</h2>
+<pre><code>Navegador (personal)        Navegador (cliente / web del hotel, iframe)
+        │                                   │
+ Streamlit Cloud: app/Inicio.py      Streamlit Cloud: reserva_web/Reservas.py
+        └────────────┬──────────────────────┘
+               paquete pms/ (reglas de negocio, una sola fuente)
+                     │  psycopg 3 + pool (DATABASE_URL, servidor)
+          Supabase PostgreSQL · tablas pms_* · RLS sin políticas
+                     │
+ GitHub Actions: pruebas · preparar/verificar Supabase · liberar vencidos (5 min) · respaldo cifrado semanal · verificar reserva web
+</code></pre>
+<ul>
+<li><strong>Interfaz:</strong> Streamlit 1.66 (Python 3.13), fondo blanco, marca ATm y aviso permanente de datos ficticios.</li>
+<li><strong>Lógica:</strong> paquete <code>pms/</code> compartido por ambas apps; la mini web solo importa <code>pms/reserva_web.py</code>.</li>
+<li><strong>Datos:</strong> PostgreSQL (Supabase). La API REST pública de Supabase no ve nada (RLS activo y permisos revocados a <code>anon</code>/<code>authenticated</code>).</li>
+<li><strong>Dependencias:</strong> streamlit 1.66.0, psycopg[binary] 3.3.6, psycopg-pool 3.3.3, pandas 3.0.6, bcrypt 4.2.0, reportlab 5.1.0.</li>
+</ul>
+<h2 id="3-modulos-del-codigo">3. Módulos del código</h2>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pms/db.py</code></td>
+<td>Conexión a PostgreSQL con pool pequeño</td>
+</tr>
+<tr>
+<td><code>pms/seguridad.py</code></td>
+<td>Roles, permisos por pantalla, contraseñas bcrypt, sesión firmada (8 h), bloqueo por 5 fallos en 15 min, primer ingreso y contraseña temporal</td>
+</tr>
+<tr>
+<td><code>pms/config.py</code></td>
+<td>Hoteles (país, moneda, zona horaria), impuestos, tipos, habitaciones, camas, usuarios</td>
+</tr>
+<tr>
+<td><code>pms/disponibilidad.py</code></td>
+<td>Habitaciones libres por noche y capacidad</td>
+</tr>
+<tr>
+<td><code>pms/tarifas.py</code></td>
+<td>Tarifas por tipo y temporada, estancia mínima, cierre de ventas, cotización</td>
+</tr>
+<tr>
+<td><code>pms/reservas.py</code></td>
+<td>Crear, modificar, cancelar (aprobación de gerencia), no-show, check-in, check-out</td>
+</tr>
+<tr>
+<td><code>pms/vencimientos.py</code></td>
+<td>Vencimiento de opciones (48 h recepción, 15 min web)</td>
+</tr>
+<tr>
+<td><code>pms/housekeeping.py</code></td>
+<td>Estados de limpieza y transiciones válidas</td>
+</tr>
+<tr>
+<td><code>pms/bloqueos.py</code></td>
+<td>Bloqueos por mantenimiento</td>
+</tr>
+<tr>
+<td><code>pms/facturacion.py</code></td>
+<td>Cargos, pagos, descuentos con aprobación, impuestos congelados, comprobante PDF</td>
+</tr>
+<tr>
+<td><code>pms/huespedes.py</code></td>
+<td>Huéspedes, consentimientos (Ley 1581), anonimización</td>
+</tr>
+<tr>
+<td><code>pms/plano.py</code>, <code>pms/dibujo.py</code></td>
+<td>Estado de cada habitación para el plano y dibujo HTML de cada planta</td>
+</tr>
+<tr>
+<td><code>pms/reserva_web.py</code>, <code>pms/pasarela.py</code>, <code>pms/correo.py</code></td>
+<td>Reserva web, pasarela simulada (HMAC) / esqueleto Wompi, correo simulado / Resend-Brevo</td>
+</tr>
+<tr>
+<td><code>pms/auditoria.py</code>, <code>pms/vistas.py</code></td>
+<td>Bitácora de solo agregar; consultas de dashboard, calendario y reportes</td>
+</tr>
+<tr>
+<td><code>app/paginas/*.py</code></td>
+<td>13 páginas: dashboard, calendario, plano, reservas, huéspedes, housekeeping, bloqueos, tarifas, facturación, reportes, reservas web, configuración, auditoría</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-modelo-de-datos">4. Modelo de datos</h2>
+<p>21 tablas <code>pms_*</code>, todas (salvo las bitácoras globales) con <code>hotel_id</code>. Detalle completo, diagramas ER y diccionario en el <strong>Anexo A · Modelo de datos</strong>. Reglas clave en la base:
+- Índice único parcial <code>ux_pms_noche_habitacion (habitacion_id, noche) where activa</code> → <strong>imposible vender dos veces una habitación</strong>, incluso con dos recepcionistas a la vez.
+- Precio por noche congelado en <code>pms_reserva_noches.precio</code>; impuestos congelados en <code>pms_cargos.impuestos</code> (jsonb).
+- <code>pms_auditoria</code> protegida por un trigger que impide <code>update</code> y <code>delete</code>.</p>
+<h2 id="5-estados-y-transiciones">5. Estados y transiciones</h2>
+<p><strong>Reserva:</strong> <code>consulta</code> → <code>opcion</code> → <code>confirmada</code> → <code>alojado</code> → <code>salida</code>; alternativas <code>cancelada</code> (requiere aprobación de gerencia; quien pide no aprueba) y <code>no_show</code>. Las opciones nuevas llevan <code>opcion_vence_en</code> y se liberan solas.</p>
+<p><strong>Housekeeping:</strong> <code>sucia</code> → <code>en_limpieza</code> → <code>inspeccion</code> → <code>lista</code>; cualquiera puede pasar a <code>fuera_de_servicio</code>, que vuelve a <code>sucia</code>.</p>
+<p><strong>Reserva web:</strong> <code>bloqueada</code> (15 min) → <code>pago_pendiente</code> → <code>pagada</code> → <code>confirmada</code>; alternativas <code>fallida</code>, <code>expirada</code>, <code>cancelada</code>. Pago por pasarela: <code>pendiente</code>, <code>aprobada</code>, <code>rechazada</code>, <code>vencida</code>, <code>requiere_revision</code>.</p>
+<h2 id="6-flujos-principales">6. Flujos principales</h2>
+<ol>
+<li><strong>Reserva en recepción:</strong> huésped (con consentimiento) → fechas, personas, tipo → desglose por noche con precio e impuestos → guardar (asigna habitación y crea noches).</li>
+<li><strong>Desde el plano:</strong> elegir fechas y habitación en el plano de la planta → «Continuar con la reserva» abre Reservas prellenado.</li>
+<li><strong>Check-in / check-out:</strong> crea <code>pms_estancias</code>; al salir la habitación pasa a <code>sucia</code>. Gerencia puede forzar salida con saldo.</li>
+<li><strong>Cuenta:</strong> cargos (noche, extra, descuento pendiente de aprobación) y pagos (efectivo, datáfono, transferencia, otro, pasarela) → comprobante PDF.</li>
+<li><strong>Reserva web:</strong> buscar → bloquear 15 min → datos + consentimiento → pago simulado firmado → número <code>PMS-AAAA-XXXXXX</code> y correo simulado → aparece en el PMS con canal <code>web</code>.</li>
+</ol>
+<h2 id="7-plano-de-habitaciones">7. Plano de habitaciones</h2>
+<p>Página «Plano de habitaciones» (recepción y gerencia la usan; administrador solo consulta; housekeeping no la ve). Muestra una planta a la vez con las 6 habitaciones del layout provisional (x01 Familiar Mar, x02 Triple Mar, x03/x04 Doble Monte, x05 Doble Patio, x06 Individual), colores por estado (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente), filtros (fechas, adultos, niños, tipo, solo vista al mar, ocultar no disponibles) y detalle con camas y precio. Usa la misma disponibilidad y tarifas que Reservas. La vista al mar es la columna <code>pms_habitaciones.vista_mar</code>.</p>
+<blockquote>
+<p><strong>Nota:</strong> el redibujo como plano arquitectónico (franja del mar, pasillo, camas dibujadas dentro de cada habitación y rótulo «vista al mar», módulo <code>pms/dibujo.py</code>) estaba en desarrollo al generar este informe y aún no se había publicado en <code>main</code>. Este documento describe la funcionalidad publicada; el redibujo se documentará al publicarse.</p>
+</blockquote>
+<h2 id="8-seguridad">8. Seguridad</h2>
+<ul>
+<li>RLS activado en todas las tablas <code>pms_*</code> sin políticas y permisos revocados a los roles públicos (<code>db/02_rls_pms.sql</code>). Solo el servidor accede con <code>DATABASE_URL</code>.</li>
+<li>Contraseñas con bcrypt; primer ingreso obliga a crear contraseña propia (mín. 10 caracteres); el administrador genera temporales que se muestran una sola vez.</li>
+<li>Sesión firmada con <code>PMS_SESION_SECRETO</code>, 8 h; cambiar la clave invalida sesiones anteriores.</li>
+<li><code>PMS_ENTORNO=produccion</code> apaga siempre el acceso de demostración.</li>
+<li>Reserva web: token de enlace HMAC (solo se guarda su hash), límites por IP y correo (hasheados), validación de entradas, eventos de pago firmados e idempotentes.</li>
+<li>Permisos por pantalla (x = usa y modifica · ver = consulta):</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Pantalla</th>
+<th>Recepción</th>
+<th>Gerencia</th>
+<th>Housekeeping</th>
+<th>Administrador</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard, Calendario, Plano, Reservas, Huéspedes, Facturación</td>
+<td>x</td>
+<td>x</td>
+<td>—</td>
+<td>ver</td>
+</tr>
+<tr>
+<td>Housekeeping</td>
+<td>ver</td>
+<td>x</td>
+<td>x</td>
+<td>ver</td>
+</tr>
+<tr>
+<td>Bloqueos</td>
+<td>ver</td>
+<td>x</td>
+<td>ver</td>
+<td>x</td>
+</tr>
+<tr>
+<td>Tarifas</td>
+<td>ver</td>
+<td>x</td>
+<td>—</td>
+<td>x</td>
+</tr>
+<tr>
+<td>Reportes</td>
+<td>—</td>
+<td>x</td>
+<td>—</td>
+<td>x</td>
+</tr>
+<tr>
+<td>Configuración</td>
+<td>—</td>
+<td>ver</td>
+<td>—</td>
+<td>x</td>
+</tr>
+<tr>
+<td>Auditoría</td>
+<td>—</td>
+<td>ver</td>
+<td>—</td>
+<td>ver</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-tareas-programadas-github-actions">9. Tareas programadas (GitHub Actions)</h2>
+<table>
+<thead>
+<tr>
+<th>Workflow</th>
+<th>Cuándo</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pruebas automáticas (<code>pruebas.yml</code>)</td>
+<td>cada push</td>
+<td>133 pruebas con PostgreSQL de servicio</td>
+</tr>
+<tr>
+<td>Preparar y verificar Supabase (<code>supabase.yml</code>)</td>
+<td>manual</td>
+<td>Crea/migra tablas <code>pms_*</code>, RLS, semilla, marca cambio de clave y verifica que la API pública no devuelve nada</td>
+</tr>
+<tr>
+<td>Liberar vencidos (<code>liberar-vencidos.yml</code>)</td>
+<td>cada 5 min</td>
+<td>Libera opciones y bloqueos web vencidos</td>
+</tr>
+<tr>
+<td>Respaldo semanal (<code>respaldo.yml</code>)</td>
+<td>domingos 3:45 a. m. (Colombia)</td>
+<td><code>pg_dump</code> de <code>pms_*</code> cifrado AES-256, artefacto 30 días</td>
+</tr>
+<tr>
+<td>Verificar reserva web (<code>verificar-reserva-web.yml</code>)</td>
+<td>manual</td>
+<td>Reserva de punta a punta con datos ficticios y limpieza</td>
+</tr>
+</tbody>
+</table>
+<h2 id="10-pruebas-automaticas">10. Pruebas automáticas</h2>
+<p>133 pruebas en <code>tests/</code>: doble venta y concurrencia, precio congelado, impuestos, permisos por rol, estados, aprobaciones, seguridad de datos, primer ingreso, plano (lógica e interfaz), reserva web (34) e interfaz de reserva web (9). Se niegan a correr contra un servidor que no sea local.</p>
+<h2 id="11-implementado-frente-al-diseno-aprobado">11. Implementado frente al diseño aprobado</h2>
+<table>
+<thead>
+<tr>
+<th>Requisito del diseño</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multi-hotel, multi-moneda, impuestos genéricos</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>4 roles con permisos por pantalla</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Reservas sin doble venta, precio congelado</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Check-in/out, housekeeping, bloqueos</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Facturación simple y comprobante PDF</td>
+<td>✅ (no es factura electrónica DIAN)</td>
+</tr>
+<tr>
+<td>Consentimiento Ley 1581 y anonimización</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Auditoría inmodificable</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Plano de habitaciones (ampliación aprobada)</td>
+<td>✅ (redibujo en curso)</td>
+</tr>
+<tr>
+<td>Reserva web con pasarela y correo</td>
+<td>✅ prototipo simulado</td>
+</tr>
+<tr>
+<td>Channel manager, factura electrónica, pasarela real</td>
+<td>Fases siguientes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12-limitaciones-conocidas">12. Limitaciones conocidas</h2>
+<ul>
+<li>Streamlit Community Cloud duerme la app tras horas sin visitas y no recibe webhooks (la pasarela real necesita un receptor aparte).</li>
+<li>Supabase Free puede pausarse por inactividad; el respaldo semanal ayuda a mantenerlo activo.</li>
+<li>Las tareas de GitHub Actions pueden retrasarse y se pausan tras 60 días sin actividad del repositorio.</li>
+<li>La mini web usa la misma credencial de base que el PMS; en producción, crear un rol con permisos mínimos.</li>
+<li>Una reserva web = una habitación por toda la estancia. Sin captcha comercial.</li>
+<li>Datos ficticios: no cargar datos reales de huéspedes en el piloto.</li>
+</ul>
+<h2 id="13-configuracion-variables">13. Configuración: variables</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>App</th>
+<th>Para qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>ambas</td>
+<td>Conexión a Supabase (solo en secretos)</td>
+</tr>
+<tr>
+<td><code>PMS_SESION_SECRETO</code></td>
+<td>ambas</td>
+<td>Firma de sesión / enlaces</td>
+</tr>
+<tr>
+<td><code>PMS_MODO_DEMO</code></td>
+<td>PMS</td>
+<td><code>no</code> en producción</td>
+</tr>
+<tr>
+<td><code>PMS_ENTORNO</code></td>
+<td>ambas</td>
+<td><code>produccion</code> apaga la demo</td>
+</tr>
+<tr>
+<td><code>PMS_PASARELA_SECRETO</code>, <code>PMS_WEB_URL</code></td>
+<td>web</td>
+<td>Firma del webhook simulado, URL pública</td>
+</tr>
+<tr>
+<td><code>PMS_WEB_HOLD_MINUTOS</code>, <code>PMS_HORAS_OPCION</code></td>
+<td>web</td>
+<td>15 y 48 por defecto</td>
+</tr>
+<tr>
+<td><code>PMS_CORREO_*</code></td>
+<td>web</td>
+<td>Opcional: correo real con lista de destinatarios permitidos</td>
+</tr>
+</tbody>
+</table>
+<p>Los valores reales <strong>no</strong> están en el repositorio ni en este documento; ver la <em>Guía de continuidad y respaldo</em>, sección 2.</p><footer>Prototipo diseñado para ATm Consulting · datos ficticios</footer></body></html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PMS Hotelero · Piloto — Guía de continuidad y respaldo</title><style>body{font-family:Calibri,Arial,sans-serif;max-width:960px;margin:2em auto;padding:0 1em;background:#fff;color:#222;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #bbb;padding:5px 8px;vertical-align:top;font-size:.9em}th{background:#eef2f7}
+img{max-width:100%;height:auto;border:1px solid #e3e8ef;margin:.5em 0}h1,h2,h3{color:#1f3a5f}h2{border-bottom:2px solid #1f3a5f;padding-bottom:.2em}
+pre{background:#f6f8fa;padding:.8em;overflow-x:auto;font-size:.85em}code{background:#f6f8fa;padding:0 .2em}blockquote{border-left:4px solid #e0a800;background:#fffbea;margin:1em 0;padding:.4em 1em}
+header,footer{color:#666;font-size:.85em}header{border-bottom:1px solid #ddd;margin-bottom:1em}footer{border-top:1px solid #ddd;margin-top:2em;padding-top:.5em}
+@media print{body{max-width:none;margin:0}h2{page-break-after:avoid}img{page-break-inside:avoid}}</style></head><body><header>Prototipo diseñado para ATm Consulting · PMS Hotelero Piloto</header><h1 id="pms-hotelero-piloto-guia-de-continuidad-y-respaldo">PMS Hotelero · Piloto — Guía de continuidad y respaldo</h1>
+<p><em>Prototipo diseñado para ATm Consulting · versión 1.0 · 29 de octubre de 2026 · este documento no contiene secretos, solo dónde viven</em></p>
+<h2 id="1-como-encaja-todo">1. Cómo encaja todo</h2>
+<ul>
+<li><strong>GitHub</strong> <code>Fredchars/pms-hoteles</code> (público): código, documentos y tareas automáticas (Actions). Cada push a <code>main</code> redespliega las dos apps.</li>
+<li><strong>Streamlit Community Cloud</strong> (cuenta GitHub <em>fredchars</em>): <code>pms-hoteles-atm</code> (PMS interno, <code>app/Inicio.py</code>) y <code>pms-reservas-atm</code> (mini web, <code>reserva_web/Reservas.py</code>).</li>
+<li><strong>Supabase Free</strong>, proyecto <em>atlas-selleragent</em>: solo las tablas <code>pms_*</code> son del PMS. El proyecto es compartido; <strong>no tocar</strong> tablas de otros proyectos (ATLAS, <code>sim_*</code>, <code>agora_*</code>). El proyecto <em>pqrs-beta</em> es exclusivo del PQRS.</li>
+<li><strong>Google Drive</strong>, carpeta del proyecto: documentos y archivo de usuarios de prueba.</li>
+</ul>
+<h2 id="2-inventario-de-cuentas-sin-secretos">2. Inventario de cuentas (sin secretos)</h2>
+<table>
+<thead>
+<tr>
+<th>Servicio</th>
+<th>Cuenta / recurso</th>
+<th>Para qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GitHub</td>
+<td>Fredchars · <code>pms-hoteles</code></td>
+<td>Código, Actions, secretos del repositorio</td>
+</tr>
+<tr>
+<td>Streamlit Cloud</td>
+<td>workspace <em>fredchars</em></td>
+<td>Hospedaje de las 2 apps</td>
+</tr>
+<tr>
+<td>Supabase</td>
+<td>proyecto <em>atlas-selleragent</em></td>
+<td>Base PostgreSQL</td>
+</tr>
+<tr>
+<td>Google Drive</td>
+<td>carpeta «PMS Hoteles - Piloto»</td>
+<td>Documentos</td>
+</tr>
+</tbody>
+</table>
+<h3 id="21-donde-viven-los-secretos-solo-los-nombres">2.1 Dónde viven los secretos (solo los nombres)</h3>
+<table>
+<thead>
+<tr>
+<th>Secreto</th>
+<th>Dónde vive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>Secretos de cada app en Streamlit (Settings → Secrets) y secretos del repositorio en GitHub</td>
+</tr>
+<tr>
+<td><code>PMS_SESION_SECRETO</code>, <code>PMS_MODO_DEMO</code>, <code>PMS_ENTORNO</code></td>
+<td>Secretos de la app en Streamlit</td>
+</tr>
+<tr>
+<td><code>PMS_PASARELA_SECRETO</code>, <code>PMS_WEB_URL</code></td>
+<td>Secretos de la mini web en Streamlit</td>
+</tr>
+<tr>
+<td><code>BACKUP_PASSPHRASE</code></td>
+<td>Secreto del repositorio en GitHub + gestor de contraseñas de ATm</td>
+</tr>
+<tr>
+<td><code>PMS_ADMIN_HASH</code> (opcional)</td>
+<td>Secreto del repositorio (solo un hash, nunca una clave en claro)</td>
+</tr>
+<tr>
+<td>Contraseñas temporales de prueba</td>
+<td>Archivo .txt en Drive (cada usuario la reemplaza al entrar)</td>
+</tr>
+</tbody>
+</table>
+<p>Nunca subir <code>secrets.toml</code>, <code>.env</code> ni claves al repositorio. Plantillas: <code>.streamlit/secrets.toml.example</code> y <code>reserva_web/secrets.toml.example</code>.</p>
+<h2 id="3-mantener-el-piloto-encendido">3. Mantener el piloto encendido</h2>
+<ul>
+<li><strong>Streamlit</strong> duerme las apps tras horas sin visitas; se despiertan con un clic.</li>
+<li><strong>Supabase Free</strong> se pausa tras ~7 días sin actividad; la tarea de liberar vencidos (cada 5 min) y el respaldo semanal lo mantienen activo. Si se pausa, entre a supabase.com y pulse <em>Restore</em>.</li>
+<li><strong>GitHub Actions</strong> programadas se pausan tras 60 días sin actividad del repositorio; reactívelas en la pestaña Actions.</li>
+</ul>
+<h2 id="4-volver-a-publicar-una-app-en-streamlit-restaurar">4. Volver a publicar una app en Streamlit (restaurar)</h2>
+<ol>
+<li>Entre a https://share.streamlit.io con GitHub (Fredchars).</li>
+<li>Si la app vieja existe y quiere la misma URL, bórrela primero (⋮ → Delete).</li>
+<li><strong>Create app → Deploy a public app from GitHub</strong>.</li>
+<li>Repositorio <code>Fredchars/pms-hoteles</code>, rama <code>main</code>, archivo <code>app/Inicio.py</code> y App URL <code>pms-hoteles-atm</code> (para la mini web: <code>reserva_web/Reservas.py</code> y <code>pms-reservas-atm</code>).</li>
+<li>Advanced settings: Python 3.13. En Secrets pegue el bloque TOML guardado de forma segura (ver 2.1). En producción <code>PMS_MODO_DEMO = "no"</code> y <code>PMS_ENTORNO = "produccion"</code>.</li>
+<li><strong>Deploy</strong>, espere 3–5 minutos y compruebe que carga la pantalla de ingreso blanca con la marca ATm.</li>
+</ol>
+<h2 id="5-volver-a-preparar-supabase-con-github-actions">5. Volver a preparar Supabase con GitHub Actions</h2>
+<ol>
+<li>GitHub → repositorio → <strong>Actions → «Preparar y verificar Supabase (PMS)» → Run workflow</strong>.</li>
+<li>El flujo crea o migra las 21 tablas <code>pms_*</code> (idempotente), aplica RLS, siembra los datos ficticios si faltan, marca a los usuarios para crear contraseña y verifica que la API pública no devuelve nada y que otras tablas no se tocaron.</li>
+<li>Verde = listo. Ejecútelo <strong>antes</strong> de desplegar código que cambie el esquema.</li>
+<li>Proyecto Supabase nuevo: créelo (plan Free), actualice <code>DATABASE_URL</code> en GitHub y en Streamlit, y ejecute este workflow.</li>
+</ol>
+<h2 id="6-respaldos">6. Respaldos</h2>
+<h3 id="61-la-frase-del-respaldo">6.1 La frase del respaldo</h3>
+<p><code>BACKUP_PASSPHRASE</code> cifra el archivo (AES-256). Sin ella el respaldo no se puede abrir. Guárdela en el gestor de contraseñas de ATm.</p>
+<h3 id="62-que-se-guarda">6.2 Qué se guarda</h3>
+<p>Cada domingo a las 3:45 a. m. (hora de Colombia) el workflow <strong>«Respaldo semanal de las tablas del PMS (cifrado)»</strong> hace <code>pg_dump</code> de <code>public.pms_*</code> (estructura + datos), agrega <code>CONTEO.txt</code> y <code>LEEME.txt</code> y produce <code>pms_AAAAMMDD_HHMM.tar.gz.gpg</code>, guardado <strong>30 días</strong> como artefacto <code>respaldo-pms</code>. También se puede lanzar a mano (Run workflow).</p>
+<h3 id="63-descargar">6.3 Descargar</h3>
+<ol>
+<li>https://github.com/Fredchars/pms-hoteles/actions → «Respaldo semanal…» → ejecución más reciente en verde.</li>
+<li>En <strong>Artifacts</strong> pulse <code>respaldo-pms</code> y descomprima el ZIP.</li>
+</ol>
+<blockquote>
+<p>Como el repositorio es público, los artefactos los puede listar cualquiera, pero están cifrados: sin la frase no se leen.</p>
+</blockquote>
+<h3 id="64-descifrar">6.4 Descifrar</h3>
+<pre><code>gpg -d pms_AAAAMMDD_HHMM.tar.gz.gpg | tar xz      # pide la frase
+</code></pre>
+<h3 id="65-restaurar">6.5 Restaurar</h3>
+<ol>
+<li>En una base nueva (recomendado) o tras borrar solo las tablas <code>pms_*</code>: <code>zcat respaldo/pms.sql.gz | psql "$DATABASE_URL"</code>.</li>
+<li><code>python scripts/setup_supabase.py</code> para reaplicar RLS y revocaciones (no duplica datos).</li>
+<li>Ejecute «Preparar y verificar Supabase (PMS)» y compruebe el ingreso.</li>
+</ol>
+<h2 id="7-conectar-correo-real-y-pasarela-real-mas-adelante">7. Conectar correo real y pasarela real (más adelante)</h2>
+<ul>
+<li><strong>Correo:</strong> definir <code>PMS_CORREO_PROVEEDOR</code> (resend o brevo), <code>PMS_CORREO_API_KEY</code>, <code>PMS_CORREO_REMITENTE</code> y <code>PMS_CORREO_PERMITIDOS</code> en los secretos de la mini web. Sin lista de permitidos, el correo sigue simulado.</li>
+<li><strong>Pasarela (Wompi en Colombia):</strong> cuenta de comercio a nombre del hotel, completar <code>PasarelaWompi</code> y montar un receptor de webhooks fuera de Streamlit. Ver <code>docs/reserva-web.md</code> y la evaluación del motor de reservas web.</li>
+</ul>
+<h2 id="8-insertar-la-reserva-en-la-web-del-hotel">8. Insertar la reserva en la web del hotel</h2>
+<pre><code class="language-html">&lt;iframe src=&quot;https://pms-reservas-atm.streamlit.app/?embed=true&amp;hotel=ID&quot; width=&quot;100%&quot; height=&quot;1000&quot; style=&quot;border:0&quot; title=&quot;Reservas&quot;&gt;&lt;/iframe&gt;
+</code></pre>
+<h2 id="9-seguridad-antes-de-usar-datos-reales">9. Seguridad antes de usar datos reales</h2>
+<ul>
+<li>Pasar a plan de pago (app privada) o a otro hospedaje; el mismo código sirve.</li>
+<li>Rol de base con permisos mínimos para la mini web; captcha real.</li>
+<li>Revisar política de datos (Ley 1581), aviso de privacidad y retención.</li>
+<li>Rotar <code>PMS_SESION_SECRETO</code> y <code>DATABASE_URL</code>; borrar el secreto de contraseñas antiguas de resiembra si ya no se usa.</li>
+<li>Borrar los usuarios y datos ficticios antes de cargar datos reales.</li>
+</ul>
+<h2 id="10-rutina-de-mantenimiento">10. Rutina de mantenimiento</h2>
+<table>
+<thead>
+<tr>
+<th>Frecuencia</th>
+<th>Tarea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Semanal</td>
+<td>Revisar que el respaldo del domingo esté en verde</td>
+</tr>
+<tr>
+<td>Mensual</td>
+<td>Descargar un respaldo y probar que se descifra; revisar Actions pausadas</td>
+</tr>
+<tr>
+<td>Por cambio</td>
+<td>Ejecutar pruebas (automático) y el workflow de Supabase si cambió el esquema</td>
+</tr>
+<tr>
+<td>Trimestral</td>
+<td>Rotar secretos y revisar usuarios activos</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-si-algo-falla">11. Si algo falla</h2>
+<table>
+<thead>
+<tr>
+<th>Síntoma</th>
+<th>Causa probable</th>
+<th>Qué hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>«No se pudo conectar con la base de datos»</td>
+<td>Supabase pausado o <code>DATABASE_URL</code> mal</td>
+<td>Restaurar el proyecto en Supabase; revisar secretos</td>
+</tr>
+<tr>
+<td>«Error inesperado (Tipo)»</td>
+<td>Fallo de código</td>
+<td>Ver registros en Streamlit (Manage app → Logs); <em>Reboot app</em></td>
+</tr>
+<tr>
+<td>App no actualiza tras un push</td>
+<td>Caché de Streamlit</td>
+<td><em>Reboot app</em> en share.streamlit.io</td>
+</tr>
+<tr>
+<td>Opciones que no se liberan</td>
+<td>Action pausada</td>
+<td>Reactivar «Liberar opciones…»; igual se liberan al consultar</td>
+</tr>
+<tr>
+<td>Respaldo en rojo</td>
+<td>Falta secreto</td>
+<td>Revisar <code>DATABASE_URL</code> y <code>BACKUP_PASSPHRASE</code> en GitHub</td>
+</tr>
+</tbody>
+</table><footer>Prototipo diseñado para ATm Consulting · datos ficticios</footer></body></html>
