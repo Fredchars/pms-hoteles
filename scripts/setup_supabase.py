@@ -1,6 +1,6 @@
 """Prepara las tablas pms_* en el proyecto Supabase (se ejecuta desde GitHub Actions, workflow supabase.yml).
 
-1) En UNA transacción: crea las 17 tablas pms_* (si no existen), índices, activa RLS y revoca anon/authenticated.
+1) En UNA transacción: crea las 21 tablas pms_* (si no existen), índices, activa RLS y revoca anon/authenticated.
 2) Si no hay hoteles (o PMS_RESEMBRAR=si): genera los datos ficticios en una base local temporal y los copia en una sola transacción.
 Solo toca tablas con prefijo pms_. No imprime la cadena de conexión ni contraseñas."""
 import os

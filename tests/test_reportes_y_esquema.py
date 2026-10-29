@@ -44,10 +44,10 @@ def test_calendario_solo_lectura_con_estados(m):
     assert estados == {"confirmada", "bloqueo"}
 
 
-def test_esquema_tiene_17_tablas_pms_con_rls_y_solo_prefijo_pms():
+def test_esquema_tiene_21_tablas_pms_con_rls_y_solo_prefijo_pms():
     sql = (RAIZ / "db" / "01_esquema_pms.sql").read_text()
     tablas = re.findall(r"create table if not exists (\w+)", sql)
-    assert len(tablas) == 17 and all(t.startswith("pms_") for t in tablas)
+    assert len(tablas) == 21 and all(t.startswith("pms_") for t in tablas)
     for t in ("pms_reserva_noches", "pms_consentimientos", "pms_bloqueos", "pms_impuestos", "pms_camas"):
         assert t in tablas
     toc = re.findall(r"(?:alter table|drop table|truncate)\s+(?:if exists\s+)?(\w+)", sql + (RAIZ / "db" / "02_rls_pms.sql").read_text())

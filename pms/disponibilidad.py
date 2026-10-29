@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 
+from . import vencimientos
 from .errores import ErrorNegocio
 
 
@@ -25,7 +26,9 @@ def bloqueada(cx, habitacion_id: int, noches: list[dt.date]) -> bool:
 
 def libres_por_noche(cx, hotel_id: int, tipo_id: int | None, noches: list[dt.date],
                      excluir_reserva: int | None = None) -> dict[dt.date, list[dict]]:
-    """Para cada noche, las habitaciones activas (del tipo, si se indica) sin noche vendida ni bloqueo."""
+    """Para cada noche, las habitaciones activas (del tipo, si se indica) sin noche vendida ni bloqueo.
+    Antes de mirar, libera las opciones vencidas del hotel (una opción vencida ya no aparta la habitación)."""
+    vencimientos.liberar_vencidas(cx, hotel_id)
     filtro = "and h.tipo_id=%s" if tipo_id else ""
     base = (hotel_id, tipo_id) if tipo_id else (hotel_id,)
     habs = cx.execute(f"select h.*, t.capacidad from pms_habitaciones h join pms_tipos_habitacion t on t.id=h.tipo_id "

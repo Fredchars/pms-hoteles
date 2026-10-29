@@ -183,6 +183,7 @@ DEF = [  # (clave, archivo, título, ícono, pantalla de permisos)
     ("calendario", "calendario.py", "Calendario", "🗓️", "calendario"),
     ("plano", "plano.py", "Plano de habitaciones", "🗺️", "plano"),
     ("reservas", "reservas.py", "Reservas", "📝", "reservas"),
+    ("reservas_web", "reservas_web.py", "Reservas web", "🌐", "reservas"),
     ("huespedes", "huespedes.py", "Huéspedes", "🧑‍🤝‍🧑", "huespedes"),
     ("housekeeping", "housekeeping.py", "Housekeeping", "🧹", "housekeeping"),
     ("bloqueos", "bloqueos.py", "Bloqueos", "🚧", "bloqueos"),

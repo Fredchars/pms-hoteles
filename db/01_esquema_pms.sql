@@ -268,3 +268,92 @@ end $f$;
 drop trigger if exists pms_auditoria_no_update on pms_auditoria;
 create trigger pms_auditoria_no_update before update or delete on pms_auditoria
   for each row execute function pms_auditoria_inmutable();
+
+-- =====================================================================================================================
+-- RESERVA WEB (fase 1, prototipo) · todo idempotente y solo aditivo: no cambia ni borra datos existentes.
+-- =====================================================================================================================
+-- Vencimiento de la «opción»/bloqueo temporal: la noche deja de estar apartada cuando se vence (ver pms/vencimientos.py).
+-- Las opciones que ya existían quedan SIN vencimiento (null): solo las nuevas lo llevan.
+alter table pms_reservas add column if not exists opcion_vence_en timestamptz;
+create index if not exists ix_pms_reservas_opcion_vence on pms_reservas (opcion_vence_en)
+  where estado = 'opcion' and opcion_vence_en is not null;
+
+-- Un pago por pasarela es un pago más (así el saldo de la reserva y los reportes lo cuentan).
+do $do$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'pms_pagos_metodo_pasarela_ck') then
+    alter table pms_pagos drop constraint if exists pms_pagos_metodo_check;
+    alter table pms_pagos add constraint pms_pagos_metodo_pasarela_ck
+      check (metodo in ('efectivo','datafono','transferencia','otro','pasarela'));
+  end if;
+end $do$;
+
+-- Datos propios de la reserva hecha en la web (1 a 1 con pms_reservas). El enlace de consulta lleva un token secreto: aquí solo su hash.
+create table if not exists pms_reservas_web (
+  id bigserial primary key,
+  hotel_id bigint not null references pms_hoteles(id),
+  reserva_id bigint not null unique references pms_reservas(id),
+  numero_publico text not null unique,                   -- PMS-AAAA-XXXXXX (no adivinable; es lo que ve el cliente)
+  token_hash text not null,                              -- sha256 del token del enlace «ver mi reserva»
+  estado text not null default 'bloqueada'
+    check (estado in ('bloqueada','pago_pendiente','pagada','confirmada','expirada','fallida','cancelada')),
+  vence_en timestamptz not null,                         -- fin del bloqueo temporal
+  monto_total numeric(14,2) not null check (monto_total >= 0),
+  moneda text not null,
+  email_hash text,                                       -- para limitar abusos (no se guarda el correo aquí)
+  ip_hash text,
+  consentimiento_version text,
+  creado timestamptz not null default now(),
+  actualizado timestamptz not null default now(),
+  confirmada_en timestamptz
+);
+create index if not exists ix_pms_rweb_hotel on pms_reservas_web (hotel_id, creado desc);
+create index if not exists ix_pms_rweb_ip on pms_reservas_web (ip_hash, creado);
+
+-- Intentos de pago en la pasarela (simulada hoy; Wompi después). Un intento = una referencia única del proveedor.
+create table if not exists pms_pagos_pasarela (
+  id bigserial primary key,
+  hotel_id bigint not null references pms_hoteles(id),
+  reserva_web_id bigint not null references pms_reservas_web(id),
+  proveedor text not null,                               -- 'simulada' | 'wompi' ...
+  referencia text not null,
+  estado text not null default 'pendiente'
+    check (estado in ('pendiente','aprobada','rechazada','vencida','requiere_revision')),
+  monto numeric(14,2) not null check (monto > 0),
+  moneda text not null,
+  pago_id bigint references pms_pagos(id),               -- el pago registrado en la reserva cuando se aprueba
+  detalle text,
+  creado timestamptz not null default now(),
+  actualizado timestamptz not null default now(),
+  unique (proveedor, referencia)
+);
+create index if not exists ix_pms_pasarela_rweb on pms_pagos_pasarela (reserva_web_id);
+
+-- Bitácora de eventos (webhooks) de la pasarela: idempotencia (mismo evento dos veces = se procesa una vez) y evidencia.
+create table if not exists pms_eventos_pasarela (
+  id bigserial primary key,
+  proveedor text not null,
+  evento_id text not null,
+  referencia text,
+  tipo text,
+  firma_valida boolean not null,
+  resultado text,
+  payload jsonb,
+  creado timestamptz not null default now(),
+  unique (proveedor, evento_id)
+);
+
+-- Correos de confirmación (simulados o enviados): bandeja de salida con lo que se envió.
+create table if not exists pms_correos (
+  id bigserial primary key,
+  hotel_id bigint not null references pms_hoteles(id),
+  reserva_id bigint references pms_reservas(id),
+  destinatario text not null,
+  asunto text not null,
+  cuerpo_html text not null,
+  proveedor text not null,                               -- 'simulado' | 'resend' | 'brevo'
+  estado text not null check (estado in ('simulado','enviado','error')),
+  detalle text,
+  creado timestamptz not null default now()
+);
+create index if not exists ix_pms_correos_reserva on pms_correos (reserva_id);

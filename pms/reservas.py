@@ -8,7 +8,7 @@ from decimal import Decimal
 
 import psycopg.errors as pge
 
-from . import config, db, disponibilidad, facturacion, huespedes, seguridad, tarifas
+from . import config, db, disponibilidad, facturacion, huespedes, seguridad, tarifas, vencimientos
 from .auditoria import registrar
 from .errores import ErrorNegocio
 from .util import dinero, hotel_de, hoy_hotel, noches_entre
@@ -111,10 +111,10 @@ def crear(actor, hotel_id: int, huesped_id: int, tipo_id: int, entrada: dt.date,
             codigo = f"R{hotel_id}-{entrada:%y%m}-{seq:04d}"
             r = cx.execute(
                 "insert into pms_reservas (hotel_id, codigo, huesped_id, tipo_id, fecha_entrada, fecha_salida, adultos, ninos, "
-                "estado, canal, comision_pct, referencia_externa, notas, creado_por) values "
-                "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) returning *",
+                "estado, canal, comision_pct, referencia_externa, notas, creado_por, opcion_vence_en) values "
+                "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, case when %s::text = 'opcion' then now() + %s::float8 * interval '1 hour' end) returning *",
                 (hotel_id, codigo, huesped_id, tipo_id, entrada, salida, adultos, ninos, estado, canal, comision,
-                 referencia_externa or None, notas or None, actor["id"])).fetchone()
+                 referencia_externa or None, notas or None, actor["id"], estado, vencimientos.HORAS_OPCION_PMS)).fetchone()
             _insertar_noches(cx, hotel_id, r["id"], tipo_id, rooms, precios)
             _recalcular(cx, r["id"])
             registrar(cx, actor, "crear", "reserva", r["id"], despues={
@@ -138,6 +138,7 @@ def modificar(actor, reserva_id: int, entrada: dt.date | None = None, salida: dt
             if not r0:
                 raise ErrorNegocio("Reserva no encontrada.")
             _lock_hotel(cx, r0["hotel_id"])
+            vencimientos.liberar_vencidas(cx, r0["hotel_id"])      # una opción ya vencida no se puede seguir editando
             r = _reserva(cx, reserva_id, actor)
             hoy = hoy or hoy_hotel(cx, r["hotel_id"])
             if r["cancelacion_estado"] == "solicitada":
@@ -186,6 +187,12 @@ def modificar(actor, reserva_id: int, entrada: dt.date | None = None, salida: dt
                     rooms[n] = vecina if vecina in cand else cand[0]
             antes = {"entrada": r["fecha_entrada"], "salida": r["fecha_salida"], "adultos": r["adultos"], "ninos": r["ninos"],
                      "canal": r["canal"], "notas": r["notas"], "estado": r["estado"]}
+            nuevo_estado = estado or r["estado"]
+            vence = r["opcion_vence_en"]                       # confirmar/pasar a consulta quita el vencimiento; volver a opción lo reinicia
+            if nuevo_estado != "opcion":
+                vence = None
+            elif r["estado"] != "opcion":
+                vence = cx.execute("select now() + %s::float8 * interval '1 hour' v", (vencimientos.HORAS_OPCION_PMS,)).fetchone()["v"]
             for n in quitar:
                 cx.execute("update pms_reserva_noches set activa=false where id=%s", (actuales[n]["id"],))
                 cx.execute("update pms_cargos set anulado=true, anulado_por=%s, motivo='Noche liberada por cambio de fechas' "
@@ -193,10 +200,10 @@ def modificar(actor, reserva_id: int, entrada: dt.date | None = None, salida: dt
             if poner:
                 _insertar_noches(cx, r["hotel_id"], reserva_id, r["tipo_id"], rooms, precios)
             cx.execute("update pms_reservas set fecha_entrada=%s, fecha_salida=%s, adultos=%s, ninos=%s, canal=%s, comision_pct=%s, "
-                       "referencia_externa=%s, notas=%s, estado=%s where id=%s",
+                       "referencia_externa=%s, notas=%s, estado=%s, opcion_vence_en=%s where id=%s",
                        (nueva_e, nueva_s, ad, ni, canal or r["canal"], com,
                         (referencia_externa if referencia_externa is not None else r["referencia_externa"]) or None,
-                        notas if notas is not None else r["notas"], estado or r["estado"], reserva_id))
+                        notas if notas is not None else r["notas"], estado or r["estado"], vence, reserva_id))
             _recalcular(cx, reserva_id)
             registrar(cx, actor, "modificar", "reserva", reserva_id, antes=antes, despues={
                 "entrada": nueva_e, "salida": nueva_s, "adultos": ad, "ninos": ni, "canal": canal or r["canal"],

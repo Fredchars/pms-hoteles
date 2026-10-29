@@ -93,7 +93,7 @@ def test_ninguna_pagina_funciona_con_la_bandera_activa(m):
     import sys
     sys.path.insert(0, str(Path(INICIO).parent))
     paginas = sorted((Path(INICIO).parent / "paginas").glob("*.py"))
-    assert len(paginas) == 12
+    assert len(paginas) == 13
     a = dict(m.admin, debe_cambiar_clave=True)
     hotel = db.uno("select * from pms_hoteles where id=%s", (m.A,))
     for p in paginas:
