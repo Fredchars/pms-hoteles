@@ -73,7 +73,9 @@ Navegador (personal)        Navegador (cliente / web del hotel, iframe)
 ## 7. Plano de habitaciones
 Página «Plano de habitaciones» (recepción y gerencia la usan; administrador solo consulta; housekeeping no la ve). Muestra una planta a la vez con las 6 habitaciones del layout provisional (x01 Familiar Mar, x02 Triple Mar, x03/x04 Doble Monte, x05 Doble Patio, x06 Individual), colores por estado (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente), filtros (fechas, adultos, niños, tipo, solo vista al mar, ocultar no disponibles) y detalle con camas y precio. Usa la misma disponibilidad y tarifas que Reservas. La vista al mar es la columna `pms_habitaciones.vista_mar`.
 
-> **Nota:** el redibujo como plano arquitectónico (franja del mar, pasillo, camas dibujadas dentro de cada habitación y rótulo «vista al mar», módulo `pms/dibujo.py`) estaba en desarrollo al generar este informe y aún no se había publicado en `main`. Este documento describe la funcionalidad publicada; el redibujo se documentará al publicarse.
+Cada planta se dibuja como plano arquitectónico (`pms/dibujo.py`, HTML puro con fondo blanco, compartido por el PMS y la mini web): franja del mar arriba, habitaciones con vista al mar en la fila del mar y el resto al otro lado del pasillo central, zonas comunes como rótulos, camas dibujadas a escala dentro de cada habitación, metros cuadrados, rótulo **VISTA MAR** y color de estado.
+
+![Plano de planta](img/plano_planta.png)
 
 ## 8. Seguridad
 - RLS activado en todas las tablas `pms_*` sin políticas y permisos revocados a los roles públicos (`db/02_rls_pms.sql`). Solo el servidor accede con `DATABASE_URL`.
@@ -115,7 +117,7 @@ Página «Plano de habitaciones» (recepción y gerencia la usan; administrador 
 | Facturación simple y comprobante PDF | ✅ (no es factura electrónica DIAN) |
 | Consentimiento Ley 1581 y anonimización | ✅ |
 | Auditoría inmodificable | ✅ |
-| Plano de habitaciones (ampliación aprobada) | ✅ (redibujo en curso) |
+| Plano de habitaciones (ampliación aprobada) | ✅ (plano dibujado por planta) |
 | Reserva web con pasarela y correo | ✅ prototipo simulado |
 | Channel manager, factura electrónica, pasarela real | Fases siguientes |
 

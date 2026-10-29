@@ -35,7 +35,9 @@ Llegadas, salidas y estado de limpieza de hoy para su hotel.
 ![Plano](img/plano.png)
 ![Detalle del plano](img/plano_detalle.png)
 
-> El plano está siendo redibujado como plano de planta (franja del mar, camas dibujadas y rótulo «vista al mar»). Las capturas muestran la versión publicada al generar este manual.
+Cada planta aparece dibujada como un plano: la franja del **mar** arriba, el **pasillo** al centro, las camas de cada habitación dibujadas por dentro (matrimonial, individual, sofá cama…), los m² y el rótulo **VISTA MAR** en las habitaciones que la tienen.
+
+![Plano de planta](img/plano_planta.png)
 
 ### 2.3 Nueva reserva
 En **Reservas → Nueva reserva**: 1) huésped (buscar o crear, con autorización de datos Ley 1581), 2) estancia (fechas, personas, tipo, habitación opcional, estado consulta/opción/confirmada, canal), 3) revisar el desglose por noche con impuestos y pulsar **Guardar reserva**. Una opción vence en 48 horas si no se confirma.
@@ -80,7 +82,7 @@ En **Housekeeping** vea las habitaciones de su hotel y cambie el estado: sucia �
 4. Pague en la **pasarela simulada** (modo de pruebas, no cobra).
 5. Recibe el número **PMS-AAAA-XXXXXX** y el correo de confirmación (simulado, se muestra en pantalla).
 
-![Mini web](img/web_02_plano.png)
+![Mini web: plano de planta](img/web_plano_planta.png)
 ![Confirmación](img/web_08_confirmacion.png)
 
 ### 6.2 Personal
