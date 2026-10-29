@@ -45,7 +45,7 @@ def _modulos_al_dia():
 
 
 _modulos_al_dia()
-from pms import correo, huespedes, pasarela, reserva_web as rw  # noqa: E402
+from pms import correo, dibujo, huespedes, pasarela, reserva_web as rw  # noqa: E402
 from pms.errores import ErrorNegocio  # noqa: E402
 from pms.util import fmt_moneda, hoy_hotel  # noqa: E402
 
@@ -209,25 +209,39 @@ def _resultados(b: dict):
             else:
                 c2.caption(t["motivo"] or "No disponible")
     st.subheader("Plano de habitaciones")
-    st.markdown('<div style="display:flex;gap:1rem;font-size:.82rem;color:#334e68;margin-bottom:.4rem"><span>🟩 Libre</span><span>⬜ No disponible</span>'
-                '<span>🟦 Elegida</span></div>', unsafe_allow_html=True)
+    st.markdown(f"<style>{dibujo.CSS}</style>"
+                '<div style="display:flex;gap:1rem;font-size:.82rem;color:#334e68;margin-bottom:.4rem"><span>🟩 Libre</span><span>⬜ No disponible</span>'
+                '<span>🟦 Elegida</span><span>🌊 Vista al mar</span></div>', unsafe_allow_html=True)
     plantas = sorted({h["planta"] for h in res["plano"]})
+    if not plantas:
+        return
+
+    def _celda(h):
+        elegida = bool(sel) and sel["habitacion_id"] == h["habitacion_id"]
+        clase = "rw-sel" if elegida else ("rw-libre" if h["libre"] else "rw-no")
+        precio = fmt_moneda(h["total"], mon) + " <span>total</span>" if h["libre"] else "—"
+        st.markdown(dibujo.tarjeta(f"rw-room {clase}", h["numero"], h["tipo"], h["vista"], h.get("vista_mar"), h["metros"], h.get("camas", []),
+                                   precio, h.get("capacidad"), "Elegida" if elegida else ("Libre" if h["libre"] else "No disponible")),
+                    unsafe_allow_html=True)
+        if h["libre"] and st.button("Elegir" if not elegida else "✔ Elegida", key=f"rw_hab_{h['habitacion_id']}", disabled=elegida,
+                                    width="stretch"):
+            st.session_state["rw_sel"] = {"tipo_id": h["tipo_id"], "habitacion_id": h["habitacion_id"],
+                                          "nombre": f"Habitación {h['numero']} · {h['tipo']}", "total": h["total"]}
+            st.rerun()
+
     for pl in plantas:
         st.markdown(f"**Planta {pl}**")
-        hs = [h for h in res["plano"] if h["planta"] == pl]
-        for i in range(0, len(hs), 3):
-            cols = st.columns(3)
-            for col, h in zip(cols, hs[i:i + 3]):
-                elegida = bool(sel) and sel["habitacion_id"] == h["habitacion_id"]
-                clase = "rw-sel" if elegida else ("rw-libre" if h["libre"] else "rw-no")
-                precio = fmt_moneda(h["total"], mon) if h["libre"] else "No disponible"
-                col.markdown(f'<div class="rw-room {clase}"><div class="n">{h["numero"]}</div><div class="t">{h["tipo"]}</div>'
-                             f'<div class="m">{h["metros"] or ""} m² · vista {h["vista"] or "—"}</div><div class="p">{precio}</div></div>',
-                             unsafe_allow_html=True)
-                if h["libre"] and col.button("Elegir" if not elegida else "✔ Elegida", key=f"rw_hab_{h['habitacion_id']}", disabled=elegida):
-                    st.session_state["rw_sel"] = {"tipo_id": h["tipo_id"], "habitacion_id": h["habitacion_id"],
-                                                  "nombre": f"Habitación {h['numero']} · {h['tipo']}", "total": h["total"]}
-                    st.rerun()
+        frente, fondo = dibujo.filas([h for h in res["plano"] if h["planta"] == pl])
+        with st.container(key=f"rw_plano_planta_{pl}"):
+            st.markdown(dibujo.MAR, unsafe_allow_html=True)
+            for lista in (frente, fondo):
+                if lista is fondo:
+                    st.markdown(dibujo.PASILLO, unsafe_allow_html=True)
+                for i in range(0, len(lista), 3):
+                    cols = st.columns(3)
+                    for col, h in zip(cols, lista[i:i + 3]):
+                        with col:
+                            _celda(h)
 
 
 def _confirmar_bloqueo(b: dict, sel: dict):

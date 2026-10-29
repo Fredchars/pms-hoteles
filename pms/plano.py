@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from . import db, disponibilidad, seguridad, tarifas
+from . import db, dibujo, disponibilidad, seguridad, tarifas
 from .errores import ErrorNegocio
 from .util import noches_entre
 
@@ -35,6 +35,9 @@ def consultar(actor, hotel_id: int, entrada: dt.date, salida: dt.date, adultos: 
     noches = _noches(entrada, salida)
     with db.tx() as cx:
         habs = disponibilidad.estado_habitaciones(cx, hotel_id, noches, adultos, ninos)
+        camas = dibujo.camas_por_habitacion(cx, [h["id"] for h in habs])
+        for h in habs:
+            h["camas"] = camas.get(h["id"], [])
         tipos = cx.execute("select id, nombre, capacidad from pms_tipos_habitacion where hotel_id=%s and activo order by id",
                            (hotel_id,)).fetchall()
         precios = {}

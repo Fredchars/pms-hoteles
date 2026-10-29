@@ -57,8 +57,8 @@ def main():
     try:
         base.esperar_app(proc)
         with sync_playwright() as p:
-            nav = p.chromium.launch()
-            ctx = nav.new_context(viewport={"width": 1440, "height": 1000}, locale="es-CO")
+            nav = p.chromium.launch(executable_path=os.environ.get("PMS_CHROME") or None, args=["--no-sandbox"])
+            ctx = nav.new_context(viewport={"width": 1440, "height": 1500}, locale="es-CO")
             pg = ctx.new_page()
             base.entrar(pg, EMAIL, claves[EMAIL])
             pg.wait_for_selector("[data-testid='stSidebarNavLink']", timeout=30000)
@@ -67,6 +67,7 @@ def main():
             pg.get_by_text("Planta 1").first.wait_for(timeout=30000)
             pg.wait_for_timeout(1500)
             pg.screenshot(path=str(SALIDA / "plano.png"), full_page=True)
+            pg.locator(".st-key-pms_plano_planta").screenshot(path=str(SALIDA / "plano_planta.png"))
             boton = pg.get_by_role("button", name="Elegir").first
             boton.click()
             pg.get_by_text("Total estimado").first.wait_for(timeout=30000)

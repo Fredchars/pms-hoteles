@@ -415,7 +415,9 @@ def test_busqueda_publica_no_filtra_datos_internos(m):
     r = rw.buscar(m.A, m.hoy + D(days=5), m.hoy + D(days=7), 2, 0)
     assert set(r) == {"hotel", "noches", "tipos", "plano"}
     for h in r["plano"]:
-        assert set(h) == {"habitacion_id", "numero", "planta", "tipo_id", "tipo", "metros", "vista", "libre", "total"}
+        assert set(h) == {"habitacion_id", "numero", "planta", "tipo_id", "tipo", "metros", "vista", "vista_mar", "capacidad", "camas",
+                          "libre", "total"}
+        assert all(set(c) == {"tipo", "ancho_cm", "cantidad"} for c in h["camas"])
     assert not any(p["libre"] for p in r["plano"] if p["tipo"] == "Doble")                 # las 2 dobles: una vendida, otra bloqueada
     assert "Ana" not in str(r) and "ficticia" not in str(r).lower()
     assert {h["id"] for h in rw.hoteles_publicos()} == {m.A, m.B}

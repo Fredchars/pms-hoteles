@@ -115,10 +115,11 @@ parrafo(d, "Es una forma visual de reservar: ves cada planta del hotel dibujada 
 imagen(d, D["plano"], 14)
 lista(d, ["Entra a «Plano de habitaciones» en el menú de la izquierda.",
           "Arriba elige el hotel (si tienes varios), la fecha de entrada y de salida, y cuántos adultos y niños. Los números de arriba (disponibles, ocupadas, en opción…) se actualizan solos.",
-          "Elige la planta (1, 2 o 3). Las habitaciones con vista al mar aparecen junto a la franja azul «MAR»; las demás, bajo la franja «PASILLO».",
+          "Elige la planta (1, 2 o 3). La planta se dibuja como un plano: arriba la franja azul «MAR» con las habitaciones que tienen vista al mar (etiqueta «🌊 VISTA MAR»), en medio el «PASILLO CENTRAL» y abajo las demás habitaciones y la escalera. Dentro de cada habitación ves sus camas dibujadas con la medida (150 cm matrimonial, 90 cm individual), los metros, la tipología, las personas que caben y el precio por noche si está libre.",
           "Filtros opcionales: «Tipo de habitación», «🌊 Solo vista al mar» y «Ocultar no disponibles» (deja en pantalla solo lo que se puede vender).",
-          "Pulsa «Elegir» en una habitación verde (disponible). Se pinta de azul y a la derecha aparece el detalle: planta, metros, capacidad, vista, camas y el desglose del precio (cada noche, impuestos del hotel y total).",
+          "Pulsa «Elegir» en una habitación verde (disponible). Se pinta de azul y debajo del plano aparece el detalle: planta, metros, capacidad, vista, camas y el desglose del precio (cada noche, impuestos del hotel y total).",
           "Pulsa «Continuar con la reserva →». Se abre «Reservas» → «Nueva reserva» con el tipo, la habitación, las fechas y los huéspedes ya puestos. Solo te falta elegir al huésped, revisar el precio y pulsar «Guardar reserva»."], numerada=True)
+imagen(d, CAPT / "plano_planta.png", 15.5, "Plano dibujado de la planta 1: mar, pasillo, camas y estados (datos ficticios)")
 imagen(d, CAPT / "plano.png", 15.5, "Plano de la planta 1 con todos los estados (datos ficticios)")
 imagen(d, CAPT / "plano_detalle.png", 15.5, "Habitación elegida: detalle y desglose del precio")
 imagen(d, CAPT / "plano_reserva.png", 15.5, "«Reservas» con los datos traídos del plano")
@@ -216,6 +217,7 @@ lista(d, ["Elige hotel, fechas, adultos y niños y pulsa «Ver habitaciones disp
           "Revisa el resumen y pulsa «Pagar». Se abre la pantalla de la pasarela SIMULADA («MODO PRUEBAS: no se cobra dinero»): pulsa «Simular pago aprobado» (o «rechazado» para probar el reintento). No se pide ninguna tarjeta.",
           "Ve la confirmación con el número de reserva (PMS-AAAA-XXXXXX), el enlace para ver su reserva y el aviso «Correo simulado: no se envió», con una vista del correo que recibiría."], numerada=True)
 imagen(d, CAPT / "web_02_plano.png", 12, "Mini web: tipos de habitación y plano (datos ficticios)")
+imagen(d, CAPT / "web_plano_planta.png", 12, "Mini web: plano dibujado de la planta 1 con camas y vista al mar (datos ficticios)")
 imagen(d, CAPT / "web_04_datos_con_temporizador.png", 12, "Bloqueo con reloj y datos del huésped con consentimiento")
 imagen(d, CAPT / "web_07_pasarela_simulada.png", 12, "Pasarela simulada: MODO PRUEBAS, no se cobra dinero")
 imagen(d, CAPT / "web_08_confirmacion.png", 12, "Confirmación con número de reserva y correo simulado")

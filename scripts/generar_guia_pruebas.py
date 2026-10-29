@@ -133,7 +133,7 @@ E = [
 
  ("E39", "Plano de habitaciones", "El plano se ve con hotel, planta y leyenda", U["rec"],
   ["Ingresa y abre «Plano de habitaciones» en el menú.", "Mira los selectores de hotel y de planta y cambia entre Planta 1, 2 y 3.", "Revisa la leyenda y los números de arriba (disponibles, ocupadas, en opción, no operativas, capacidad insuficiente)."],
-  "Cada planta muestra sus 6 habitaciones dibujadas como tarjetas, con número, tipo, capacidad, metros y precio por noche. La leyenda explica los siete colores (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente). Las de vista al mar quedan junto a la franja «MAR». Recepción solo ve su hotel."),
+  "Cada planta se dibuja como un plano: franja «MAR» arriba, habitaciones con vista al mar en esa fila, pasillo central y las demás habitaciones al otro lado, más los rótulos «Zona común» y «Escalera · ascensor». Cada habitación muestra número, tipología, metros, las camas dibujadas con su medida (150 cm, 90 cm), capacidad y precio por noche si está libre; la etiqueta «VISTA MAR» aparece solo en las que la tienen. La leyenda explica los siete colores (disponible, ocupada, en opción, bloqueada, fuera de servicio, seleccionada, capacidad insuficiente). Las de vista al mar quedan junto a la franja «MAR». Recepción solo ve su hotel."),
  ("E40", "Plano de habitaciones", "Los colores cambian con las fechas", f"{U['rec']} y {U['ger1']}",
   ["Con recepción, crea una reserva confirmada de 2 noches desde mañana en una habitación concreta (en «Reservas», casilla «Habitación (opcional)»).", "En el plano pon esas mismas fechas de entrada y salida.", "Pon como entrada el día de salida de esa reserva.",
    "Crea otra reserva en estado «opción» y un bloqueo (gerencia, pantalla «Bloqueos») en otras dos habitaciones y vuelve al plano con esas fechas."],
@@ -198,6 +198,9 @@ E = [
  ("E59", "Reserva web", "La mini web no rompe el PMS", "Todos los usuarios",
   ["Después de hacer reservas web, ingresa al PMS con recepción, gerencia, housekeeping y administrador.", "Recarga la página (F5) y comprueba que la sesión sigue.", "Comprueba que no se pide la contraseña de nuevo ni se pierde ninguna reserva."],
   "El PMS funciona igual que antes: misma sesión, mismo bloqueo por intentos, mismos permisos. La mini web no tiene acceso a pantallas internas."),
+ ("E60", "Plano de habitaciones", "Plano dibujado: camas, vista al mar y estados (PMS y mini web)", f"{U['rec']} y un visitante de la mini web",
+  ["Con recepción abre «Plano de habitaciones», planta 1, y compara cada habitación con su configuración (Configuración → habitaciones y camas).", "Marca o desmarca «vista al mar» en una habitación (administrador) y vuelve al plano.", "Abre la mini web, busca fechas y revisa el plano de cada planta."],
+  "Las camas dibujadas coinciden en número y medida con las registradas (p. ej. 101: dos de 150 cm; 102: una de 150 y una de 90). La etiqueta «VISTA MAR» y la fila junto al mar siguen la casilla de vista al mar. La mini web muestra el mismo dibujo, con libre, no disponible o elegida, sin datos internos."),
 ]
 
 

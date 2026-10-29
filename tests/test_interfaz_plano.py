@@ -33,7 +33,7 @@ def _num(html):
 
 
 def _estado(html):
-    return html.split("pms-room-")[1].split('"')[0]
+    return html.split("pms-room-")[1].split('"')[0].split()[0]
 
 
 def test_plano_se_ve_con_estados_y_leyenda(m):

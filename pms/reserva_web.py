@@ -18,7 +18,7 @@ from decimal import Decimal
 
 import psycopg.errors as pge
 
-from . import correo, db, disponibilidad, facturacion, huespedes, pasarela, tarifas, vencimientos
+from . import correo, db, dibujo, disponibilidad, facturacion, huespedes, pasarela, tarifas, vencimientos
 from .auditoria import registrar
 from .errores import ErrorNegocio
 from .reservas import _insertar_noches, _lock_hotel, _recalcular, _traducir, _validar_ocupacion
@@ -145,8 +145,10 @@ def buscar(hotel_id: int, entrada: dt.date, salida: dt.date, adultos: int = 2, n
                     item["motivo"] = str(e)
             tipos.append(item)
         cot = {t["tipo_id"]: t["cotizacion"] for t in tipos}
+        camas = dibujo.camas_por_habitacion(cx, [h["id"] for h in estado])
         plano = [{"habitacion_id": h["id"], "numero": h["numero"], "planta": h["planta"], "tipo_id": h["tipo_id"], "tipo": h["tipo"],
-                  "metros": h["metros"], "vista": h["vista"], "libre": bool(h["disponible"] and cot.get(h["tipo_id"])),
+                  "metros": h["metros"], "vista": h["vista"], "vista_mar": bool(h["vista_mar"]),
+                  "capacidad": h["capacidad"], "camas": [{k: c[k] for k in ("tipo", "ancho_cm", "cantidad")} for c in camas.get(h["id"], [])], "libre": bool(h["disponible"] and cot.get(h["tipo_id"])),
                   "total": cot[h["tipo_id"]]["total"] if cot.get(h["tipo_id"]) else None}
                  for h in estado if h["estado"] != "fuera_de_servicio"]
         return {"hotel": {"id": hotel["id"], "nombre": hotel["nombre"], "moneda": hotel["moneda"]}, "noches": len(noches),

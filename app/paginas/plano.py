@@ -3,7 +3,7 @@ import datetime as dt
 import streamlit as st
 
 import ui
-from pms import config, disponibilidad, plano
+from pms import config, dibujo, disponibilidad, plano
 from pms.errores import ErrorNegocio
 from pms.util import hoy_hotel
 
@@ -80,38 +80,46 @@ st.markdown('<div class="pms-leyenda">' + "".join(f'<span><i style="background:{
             + "</div>", unsafe_allow_html=True)
 
 # ---------------- plano de la planta + detalle ----------------
-c_plano, c_det = st.columns([5, 3], gap="large")
+c_plano, c_det = st.container(), st.container()      # plano a todo el ancho; detalle debajo
 with c_plano:
     visibles = plano.filtrar(habs, planta, tipo_id, solo_mar, ocultar, sel)
     st.markdown(f"##### Planta {planta}")
     if not visibles:
         st.info("Ninguna habitación de esta planta cumple los filtros.")
 
-    def _fila(lista):
-        for i in range(0, len(lista), 3):
-            trozo = lista[i:i + 3]
-            cols = st.columns(3)
-            for col, h in zip(cols, trozo):
-                with col:
-                    pr = datos["precios"].get(h["tipo_id"], {})
-                    precio = f"{ui.dinero(pr['promedio_noche'])} / noche" if pr.get("promedio_noche") is not None else "Sin tarifa"
-                    mar = "🌊 vista al mar · " if h["vista_mar"] else ""
-                    st.markdown(f'<div class="pms-room pms-room-{h["visual"]}"><div class="n">{h["numero"]}</div>'
-                                f'<div class="t">{h["tipo"]} · hasta {h["capacidad"]}</div>'
-                                f'<div class="m">{mar}{h["metros"] or "—"} m²</div><div class="p">{precio}</div>'
-                                f'<div class="e">{NOMBRES[h["visual"]]}</div></div>', unsafe_allow_html=True)
-                    if h["disponible"]:
-                        st.button("✓ Elegida" if h["visual"] == "seleccionada" else "Elegir", key=f"pms_pl_b_{h['id']}", width="stretch",
-                                  on_click=_elegir, args=(h["id"],), type="primary" if h["visual"] == "seleccionada" else "secondary")
+    st.markdown(f"<style>{dibujo.CSS}</style>", unsafe_allow_html=True)
 
-    frente = [h for h in visibles if h["vista_mar"]]
-    fondo = [h for h in visibles if not h["vista_mar"]]
-    if frente:
-        st.markdown('<div class="pms-mar">🌊 &nbsp; M A R</div>', unsafe_allow_html=True)
-        _fila(frente)
-    if frente and fondo:
-        st.markdown('<div class="pms-pasillo">PASILLO</div>', unsafe_allow_html=True)
-    _fila(fondo)
+    def _celda(h):
+        pr = datos["precios"].get(h["tipo_id"], {})
+        if pr.get("promedio_noche") is not None:
+            precio = f'{ui.dinero(pr["promedio_noche"])} <span>/ noche</span>'
+        else:
+            precio = '<span>Sin tarifa</span>'
+        if h["visual"] in ("ocupada", "opcion", "bloqueada", "fuera_de_servicio"):
+            precio = "—"
+        st.markdown(dibujo.tarjeta(f'pms-room pms-room-{h["visual"]}', h["numero"], h["tipo"], h["vista"], h["vista_mar"], h["metros"],
+                                   h.get("camas", []), precio, h["capacidad"], NOMBRES[h["visual"]]), unsafe_allow_html=True)
+        if h["disponible"]:
+            st.button("✓ Elegida" if h["visual"] == "seleccionada" else "Elegir", key=f"pms_pl_b_{h['id']}", width="stretch",
+                      on_click=_elegir, args=(h["id"],), type="primary" if h["visual"] == "seleccionada" else "secondary")
+
+    def _fila(lista, extra_html, minimo):
+        n = max(minimo, len(lista) + 1)
+        cols = st.columns(n)
+        for col, h in zip(cols, lista):
+            with col:
+                _celda(h)
+        cols[len(lista)].markdown(extra_html, unsafe_allow_html=True)
+
+    frente, fondo = dibujo.filas(visibles)
+    if visibles:
+        with st.container(key="pms_plano_planta"):
+            st.markdown(dibujo.MAR, unsafe_allow_html=True)
+            if frente:
+                _fila(frente, dibujo.COMUN_MAR, 3)
+            st.markdown(dibujo.PASILLO, unsafe_allow_html=True)
+            if fondo:
+                _fila(fondo, dibujo.ESCALERA, 5)
 
 with c_det:
     with st.container(border=True):
